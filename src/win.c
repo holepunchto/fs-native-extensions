@@ -144,7 +144,7 @@ fs_ext__sparse (uv_os_fd_t fd) {
 
   BOOL res = DeviceIoControl(
     fd,
-    FSCTL_sparse,
+    FSCTL_SET_SPARSE,
     NULL,
     0,
     NULL,

@@ -177,29 +177,3 @@ fs_ext_swap (uv_loop_t *loop, fs_ext_swap_t *req, const char *from_path, const c
 
   return uv_queue_work(loop, &req->req, fs_ext__swap_work, fs_ext__swap_after_work);
 }
-
-static void
-fs_ext__swap_at_work (uv_work_t *req) {
-  fs_ext_swap_at_t *r = (fs_ext_swap_at_t *) req->data;
-
-  r->result = fs_ext__swap_at(r->from_fd, r->from_path, r->to_fd, r->to_path);
-}
-
-static void
-fs_ext__swap_at_after_work (uv_work_t *req, int status) {
-  fs_ext_swap_at_t *r = (fs_ext_swap_at_t *) req->data;
-
-  if (r->cb) r->cb(r, r->result);
-}
-
-int
-fs_ext_swap_at (uv_loop_t *loop, fs_ext_swap_at_t *req, uv_os_fd_t from_fd, const char *from_path, uv_os_fd_t to_fd, const char *to_path, fs_ext_swap_at_cb cb) {
-  req->from_fd = from_fd;
-  req->from_path = from_path;
-  req->to_fd = to_fd;
-  req->to_path = to_path;
-  req->cb = cb;
-  req->req.data = (void *) req;
-
-  return uv_queue_work(loop, &req->req, fs_ext__swap_at_work, fs_ext__swap_at_after_work);
-}

@@ -156,32 +156,42 @@ fs_ext__sparse (uv_os_fd_t fd) {
   return res ? 0 : uv_translate_sys_error(GetLastError());
 }
 
-int
-fs_ext__swap (const char *from_path, const char *to_path) {
+static int
+fs_ext__temp_path (char *path) {
   TCHAR temp_path[MAX_PATH];
-  TCHAR swap_path[MAX_PATH];
 
   DWORD bytes = GetTempPath(MAX_PATH, temp_path);
 
   if (bytes == 0) return uv_translate_sys_error(GetLastError());
 
-  bytes = GetTempFileName(temp_path, NULL, 0, swap_path);
+  bytes = GetTempFileName(temp_path, NULL, 0, path);
 
-  if (bytes == 0) return uv_translate_sys_error(GetLastError());
+  return bytes > 0 ? 0 : uv_translate_sys_error(GetLastError());
+}
 
+static int
+fs_ext__move (const char *from, const char *to) {
   BOOL res = MoveFileEx(
-    to_path,
-    swap_path,
+    from,
+    to,
     MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING
   );
 
-  if (!res) return uv_translate_sys_error(GetLastError());
-
-  res = MoveFileEx(from_path, to_path, MOVEFILE_COPY_ALLOWED);
-
-  if (!res) return uv_translate_sys_error(GetLastError());
-
-  res = MoveFileEx(swap_path, from_path, MOVEFILE_COPY_ALLOWED);
-
   return res ? 0 : uv_translate_sys_error(GetLastError());
+}
+
+int
+fs_ext__swap (const char *from, const char *to) {
+  TCHAR swap[MAX_PATH];
+
+  int err = fs_ext__temp_path(swap);
+  if (err < 0) return err;
+
+  err = fs_ext__move(to, from);
+  if (err < 0) return err;
+
+  err = fs_ext__move(from, to);
+  if (err < 0) return err;
+
+  return fs_ext__move(swap, from);
 }

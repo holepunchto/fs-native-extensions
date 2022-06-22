@@ -48,8 +48,8 @@ fs_ext__trim (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 int
-fs_ext__swap_at (uv_os_fd_t from_fd, const char *from_path, uv_os_fd_t to_fd, const char *to_path) {
-  int res = renameatx_np(from_fd, from_path, to_fd, to_path, RENAME_SWAP);
+fs_ext__swap (const char *from, const char *to) {
+  int res = renameatx_np(AT_FDCWD, from, AT_FDCWD, to, RENAME_SWAP);
 
   return res == -1 ? uv_translate_sys_error(errno) : res;
 }

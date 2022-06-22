@@ -144,8 +144,8 @@ on_fs_ext_swap (fs_ext_swap_t *req, int status) {
   napi_delete_reference(env, r->ctx);
   napi_delete_reference(env, r->cb);
 
-  free((char *) req->from_path);
-  free((char *) req->to_path);
+  free((char *) req->from);
+  free((char *) req->to);
 }
 
 NAPI_METHOD(fs_ext_napi_try_lock) {

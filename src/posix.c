@@ -30,11 +30,3 @@ int
 fs_ext__sparse (uv_os_fd_t fd) {
   return 0;
 }
-
-int
-fs_ext__swap_at (uv_os_fd_t from_fd, const char *from_path, uv_os_fd_t to_fd, const char *to_path);
-
-int
-fs_ext__swap (const char *from_path, const char *to_path) {
-  return fs_ext__swap_at(AT_FDCWD, from_path, AT_FDCWD, to_path);
-}

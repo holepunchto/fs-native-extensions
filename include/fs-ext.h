@@ -71,8 +71,8 @@ struct fs_ext_sparse_s {
 struct fs_ext_swap_s {
   uv_work_t req;
 
-  const char *from_path;
-  const char *to_path;
+  const char *from;
+  const char *to;
 
   fs_ext_swap_cb cb;
 
@@ -109,7 +109,7 @@ int
 fs_ext_sparse (uv_loop_t *loop, fs_ext_sparse_t *req, uv_os_fd_t fd, fs_ext_sparse_cb cb);
 
 int
-fs_ext_swap (uv_loop_t *loop, fs_ext_swap_t *req, const char *from_path, const char *to_path, fs_ext_swap_cb cb);
+fs_ext_swap (uv_loop_t *loop, fs_ext_swap_t *req, const char *from, const char *to, fs_ext_swap_cb cb);
 
 #ifdef __cplusplus
 }

@@ -34,6 +34,6 @@ int
 fs_ext__sparse (uv_os_fd_t fd);
 
 int
-fs_ext__swap (const char *from_path, const char *to_path);
+fs_ext__swap (const char *from, const char *to);
 
 #endif // FS_EXT_PLATFORM_H

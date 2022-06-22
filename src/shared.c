@@ -158,7 +158,7 @@ static void
 fs_ext__swap_work (uv_work_t *req) {
   fs_ext_swap_t *r = (fs_ext_swap_t *) req->data;
 
-  r->result = fs_ext__swap(r->from_path, r->to_path);
+  r->result = fs_ext__swap(r->from, r->to);
 }
 
 static void
@@ -169,9 +169,9 @@ fs_ext__swap_after_work (uv_work_t *req, int status) {
 }
 
 int
-fs_ext_swap (uv_loop_t *loop, fs_ext_swap_t *req, const char *from_path, const char *to_path, fs_ext_swap_cb cb) {
-  req->from_path = from_path;
-  req->to_path = to_path;
+fs_ext_swap (uv_loop_t *loop, fs_ext_swap_t *req, const char *from, const char *to, fs_ext_swap_cb cb) {
+  req->from = from;
+  req->to = to;
   req->cb = cb;
   req->req.data = (void *) req;
 

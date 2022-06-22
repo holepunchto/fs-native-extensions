@@ -174,7 +174,7 @@ fs_ext__move (const char *from, const char *to) {
   BOOL res = MoveFileEx(
     from,
     to,
-    MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING
+    MOVEFILE_REPLACE_EXISTING
   );
 
   return res ? 0 : uv_translate_sys_error(GetLastError());

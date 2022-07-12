@@ -3,10 +3,16 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #include <uv.h>
 
 #include "../include/fs-ext.h"
 #include "platform.h"
+
+#ifndef RENAME_EXCHANGE
+#define RENAME_EXCHANGE 2
+#endif
 
 int
 fs_ext__try_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
@@ -62,7 +68,7 @@ fs_ext__trim (uv_os_fd_t fd, uint64_t offset, size_t length) {
 
 int
 fs_ext__swap (const char *from, const char *to) {
-  int res = renameat2(AT_FDCWD, from, AT_FDCWD, to, RENAME_EXCHANGE);
+  int res = syscall(SYS_renameat2, AT_FDCWD, from, AT_FDCWD, to, RENAME_EXCHANGE);
 
   return res == -1 ? uv_translate_sys_error(errno) : res;
 }

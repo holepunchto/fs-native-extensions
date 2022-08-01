@@ -18,14 +18,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hypercore-skunkworks/fs-native-extensions.git"
+    "url": "git+https://github.com/holepunchto/fs-native-extensions.git"
   },
   "author": "Kasper Isager Dalsgarð <kasper@funktionel.co>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hypercore-skunkworks/fs-native-extensions/issues"
+    "url": "https://github.com/holepunchto/fs-native-extensions/issues"
   },
-  "homepage": "https://github.com/hypercore-skunkworks/fs-native-extensions#readme",
+  "homepage": "https://github.com/holepunchto/fs-native-extensions#readme",
   "dependencies": {
     "napi-macros": "^2.0.0",
     "node-gyp-build": "^4.2.3"

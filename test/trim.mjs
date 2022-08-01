@@ -41,7 +41,7 @@ test('implicit hole', async (t) => {
   t.pass()
 })
 
-test('unaligned hole', { skip: process.platform === 'darwin' }, async (t) => {
+test('unaligned hole', async (t) => {
   const file = await open(temporaryFile(), 'w+')
   await sparse(file.fd)
 

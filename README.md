@@ -81,11 +81,9 @@ Release a lock on a file.
 
 #### `await trim(fd, offset, length)`
 
-Create a hole in a file at `offset` for `length` bytes. On file systems that support sparse files, holes will take up no physical space.
+Create a hole in a file at `offset` for `length` bytes. On file systems that support sparse files, file blocks wholly covered by a hole will take up no physical space.
 
 On Windows, the file must first be marked sparse using `sparse(fd)`. Otherwise, zeros will be explicitly written to the hole.
-
-On macOS, the hole must be aligned to block boundaries as the call will otherwise fail.
 
 #### `await sparse(fd)`
 

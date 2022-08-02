@@ -53,7 +53,7 @@ Options include:
 
 Request a lock on a file, resolving when the lock is granted. If another file descriptor holds the lock, the lock will not be granted until the other file descriptor releases the lock.
 
-Options are the same as `lock()`.
+Options are the same as `tryLock()`.
 
 #### `const granted = tryDowngradeLock(fd[, offset[, length]])`
 

@@ -87,7 +87,7 @@ On Windows, the file must first be marked sparse using `sparse(fd)`. Otherwise, 
 
 #### `await sparse(fd)`
 
-Mark a file as sparse. On Windows, this operation is required before holes can be punched in the file. On other systems, this operation has no effect.
+Mark a file as sparse. On Windows, this operation is required before holes can be created in the file. On other systems, this operation has no effect.
 
 #### `await swap(from, to)`
 

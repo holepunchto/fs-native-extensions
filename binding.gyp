@@ -27,6 +27,11 @@
           './src/linux.c'
         ],
       }],
+      ['OS=="freebsd"', {
+        'sources': [
+          './src/freebsd.c'
+        ],
+      }],
       ['OS=="win"', {
         'sources': [
           './src/win.c'

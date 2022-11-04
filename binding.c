@@ -60,8 +60,8 @@ on_fs_ext_lock (fs_ext_lock_t *req, int status) {
 
   napi_close_handle_scope(env, scope);
 
-  napi_delete_reference(env, r->ctx);
   napi_delete_reference(env, r->cb);
+  napi_delete_reference(env, r->ctx);
 }
 
 static void
@@ -87,8 +87,8 @@ on_fs_ext_trim (fs_ext_trim_t *req, int status) {
 
   napi_close_handle_scope(env, scope);
 
-  napi_delete_reference(env, r->ctx);
   napi_delete_reference(env, r->cb);
+  napi_delete_reference(env, r->ctx);
 }
 
 static void
@@ -114,8 +114,8 @@ on_fs_ext_sparse (fs_ext_sparse_t *req, int status) {
 
   napi_close_handle_scope(env, scope);
 
-  napi_delete_reference(env, r->ctx);
   napi_delete_reference(env, r->cb);
+  napi_delete_reference(env, r->ctx);
 }
 
 static void
@@ -141,8 +141,8 @@ on_fs_ext_swap (fs_ext_swap_t *req, int status) {
 
   napi_close_handle_scope(env, scope);
 
-  napi_delete_reference(env, r->ctx);
   napi_delete_reference(env, r->cb);
+  napi_delete_reference(env, r->ctx);
 
   free((char *) req->from);
   free((char *) req->to);

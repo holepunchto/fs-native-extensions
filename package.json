@@ -5,6 +5,7 @@
   "main": "index.js",
   "files": [
     "index.js",
+    "binding.js",
     "include",
     "src",
     "prebuilds",

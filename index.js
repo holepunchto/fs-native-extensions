@@ -1,5 +1,5 @@
 const util = require('util')
-const binding = require('node-gyp-build')(__dirname)
+const binding = require('./binding')
 
 function onwork (errno) {
   if (errno < 0) this.reject(toError(errno))

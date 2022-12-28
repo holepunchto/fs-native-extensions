@@ -1,4 +1,4 @@
-const util = require('util')
+const errors = require('uv-errors')
 const binding = require('./binding')
 
 function onwork (errno) {
@@ -200,13 +200,15 @@ exports.swap = function swap (from, to) {
 }
 
 function toError (errno) {
-  const [code, msg] = util.getSystemErrorMap().get(errno)
+  const [code, msg] = errors.get(errno)
 
   const err = new Error(`${code}: ${msg}`)
   err.errno = errno
   err.code = code
 
-  Error.captureStackTrace(err, toError)
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(err, toError)
+  }
 
   return err
 }

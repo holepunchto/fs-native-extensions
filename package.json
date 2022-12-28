@@ -29,7 +29,8 @@
   "homepage": "https://github.com/holepunchto/fs-native-extensions#readme",
   "dependencies": {
     "napi-macros": "^2.0.0",
-    "node-gyp-build": "^4.2.3"
+    "node-gyp-build": "^4.2.3",
+    "uv-errors": "^1.0.1"
   },
   "devDependencies": {
     "brittle": "^2.3.1",

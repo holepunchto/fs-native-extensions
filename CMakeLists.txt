@@ -10,9 +10,8 @@ target_sources(
   fs_native_extensions
   INTERFACE
     include/fs-ext.h
-  PUBLIC
-    binding.c
   PRIVATE
+    binding.c
     src/shared.c
 )
 

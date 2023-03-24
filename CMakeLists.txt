@@ -4,6 +4,8 @@ project(fs_native_extensions C)
 
 include(pear)
 
+pear_target(target)
+
 add_pear_module(fs_native_extensions)
 
 target_sources(
@@ -15,7 +17,7 @@ target_sources(
     src/shared.c
 )
 
-if(UNIX)
+if(NOT target MATCHES "win32")
   target_sources(
     fs_native_extensions
     PRIVATE
@@ -23,7 +25,7 @@ if(UNIX)
   )
 endif()
 
-if(APPLE)
+if(target MATCHES "darwin|ios")
   target_sources(
     fs_native_extensions
     PRIVATE
@@ -31,7 +33,7 @@ if(APPLE)
   )
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+if(target MATCHES "linux|android")
   target_sources(
     fs_native_extensions
     PRIVATE
@@ -39,7 +41,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
   )
 endif()
 
-if(WIN32)
+if(target MATCHES "win32")
   target_sources(
     fs_native_extensions
     PRIVATE

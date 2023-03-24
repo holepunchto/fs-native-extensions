@@ -10,7 +10,8 @@
     "src",
     "prebuilds",
     "binding.c",
-    "binding.gyp"
+    "binding.gyp",
+    "CMakeLists.txt"
   ],
   "scripts": {
     "test": "standard && brittle test/*.mjs",

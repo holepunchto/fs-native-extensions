@@ -99,4 +99,4 @@ On macOS and Linux, the swap is performed atomically.
 
 ## License
 
-ISC
+Apache-2.0

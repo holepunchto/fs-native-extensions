@@ -54,7 +54,17 @@ on_fs_ext_lock (fs_ext_lock_t *req, int status) {
   napi_value callback;
   napi_get_reference_value(env, r->cb, &callback);
 
-  napi_create_int32(env, req->result, &argv[0]);
+  if (req->result < 0) {
+    napi_value code;
+    napi_create_string_utf8(env, uv_err_name(req->result), -1, &code);
+
+    napi_value message;
+    napi_create_string_utf8(env, uv_strerror(req->result), -1, &message);
+
+    napi_create_error(env, code, message, &argv[0]);
+  } else {
+    napi_get_null(env, &argv[0]);
+  }
 
   NAPI_MAKE_CALLBACK(env, NULL, ctx, callback, 1, argv, NULL);
 
@@ -81,7 +91,17 @@ on_fs_ext_trim (fs_ext_trim_t *req, int status) {
   napi_value callback;
   napi_get_reference_value(env, r->cb, &callback);
 
-  napi_create_int32(env, req->result, &argv[0]);
+  if (req->result < 0) {
+    napi_value code;
+    napi_create_string_utf8(env, uv_err_name(req->result), -1, &code);
+
+    napi_value message;
+    napi_create_string_utf8(env, uv_strerror(req->result), -1, &message);
+
+    napi_create_error(env, code, message, &argv[0]);
+  } else {
+    napi_get_null(env, &argv[0]);
+  }
 
   NAPI_MAKE_CALLBACK(env, NULL, ctx, callback, 1, argv, NULL);
 
@@ -108,7 +128,17 @@ on_fs_ext_sparse (fs_ext_sparse_t *req, int status) {
   napi_value callback;
   napi_get_reference_value(env, r->cb, &callback);
 
-  napi_create_int32(env, req->result, &argv[0]);
+  if (req->result < 0) {
+    napi_value code;
+    napi_create_string_utf8(env, uv_err_name(req->result), -1, &code);
+
+    napi_value message;
+    napi_create_string_utf8(env, uv_strerror(req->result), -1, &message);
+
+    napi_create_error(env, code, message, &argv[0]);
+  } else {
+    napi_get_null(env, &argv[0]);
+  }
 
   NAPI_MAKE_CALLBACK(env, NULL, ctx, callback, 1, argv, NULL);
 
@@ -135,7 +165,17 @@ on_fs_ext_swap (fs_ext_swap_t *req, int status) {
   napi_value callback;
   napi_get_reference_value(env, r->cb, &callback);
 
-  napi_create_int32(env, req->result, &argv[0]);
+  if (req->result < 0) {
+    napi_value code;
+    napi_create_string_utf8(env, uv_err_name(req->result), -1, &code);
+
+    napi_value message;
+    napi_create_string_utf8(env, uv_strerror(req->result), -1, &message);
+
+    napi_create_error(env, code, message, &argv[0]);
+  } else {
+    napi_get_null(env, &argv[0]);
+  }
 
   NAPI_MAKE_CALLBACK(env, NULL, ctx, callback, 1, argv, NULL);
 
@@ -162,7 +202,11 @@ NAPI_METHOD(fs_ext_napi_try_lock) {
     exclusive ? FS_EXT_WRLOCK : FS_EXT_RDLOCK
   );
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_wait_for_lock) {
@@ -191,7 +235,11 @@ NAPI_METHOD(fs_ext_napi_wait_for_lock) {
     on_fs_ext_lock
   );
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_try_downgrade_lock) {
@@ -202,7 +250,11 @@ NAPI_METHOD(fs_ext_napi_try_downgrade_lock) {
 
   int err = fs_ext_try_downgrade_lock(uv_get_osfhandle(fd), offset, len);
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_wait_for_downgrade_lock) {
@@ -229,7 +281,11 @@ NAPI_METHOD(fs_ext_napi_wait_for_downgrade_lock) {
     on_fs_ext_lock
   );
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_try_upgrade_lock) {
@@ -240,7 +296,11 @@ NAPI_METHOD(fs_ext_napi_try_upgrade_lock) {
 
   int err = fs_ext_try_upgrade_lock(uv_get_osfhandle(fd), offset, len);
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_wait_for_upgrade_lock) {
@@ -267,7 +327,11 @@ NAPI_METHOD(fs_ext_napi_wait_for_upgrade_lock) {
     on_fs_ext_lock
   );
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_unlock) {
@@ -278,7 +342,11 @@ NAPI_METHOD(fs_ext_napi_unlock) {
 
   int err = fs_ext_unlock(uv_get_osfhandle(fd), offset, len);
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_trim) {
@@ -305,7 +373,11 @@ NAPI_METHOD(fs_ext_napi_trim) {
     on_fs_ext_trim
   );
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_sparse) {
@@ -328,7 +400,11 @@ NAPI_METHOD(fs_ext_napi_sparse) {
     on_fs_ext_sparse
   );
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_METHOD(fs_ext_napi_swap) {
@@ -353,7 +429,11 @@ NAPI_METHOD(fs_ext_napi_swap) {
     on_fs_ext_swap
   );
 
-  NAPI_RETURN_INT32(err);
+  if (err < 0) {
+    napi_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
 }
 
 NAPI_INIT() {

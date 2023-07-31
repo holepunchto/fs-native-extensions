@@ -1,8 +1,7 @@
-const errors = require('uv-errors')
 const binding = require('./binding')
 
-function onwork (errno) {
-  if (errno < 0) this.reject(toError(errno))
+function onwork (err) {
+  if (err) this.reject(err)
   else this.resolve()
 }
 
@@ -21,10 +20,9 @@ exports.tryLock = function tryLock (fd, offset = 0, length = 0, opts = {}) {
     opts = {}
   }
 
-  const errno = binding.fs_ext_napi_try_lock(fd, offset, length, opts.shared ? 0 : 1)
-
-  if (errno < 0) {
-    const err = toError(errno)
+  try {
+    binding.fs_ext_napi_try_lock(fd, offset, length, opts.shared ? 0 : 1)
+  } catch (err) {
     if (err.code === 'EAGAIN') return false
     throw err
   }
@@ -59,18 +57,19 @@ exports.waitForLock = function waitForLock (fd, offset = 0, length = 0, opts = {
     ctx.reject = reject
   })
 
-  const errno = binding.fs_ext_napi_wait_for_lock(req, fd, offset, length, opts.shared ? 0 : 1, ctx, onwork)
-
-  if (errno < 0) return Promise.reject(toError(errno))
+  try {
+    binding.fs_ext_napi_wait_for_lock(req, fd, offset, length, opts.shared ? 0 : 1, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 
   return promise
 }
 
 exports.tryDowngradeLock = function tryDowngradeLock (fd, offset = 0, length = 0) {
-  const errno = binding.fs_ext_napi_try_downgrade_lock(fd, offset, length)
-
-  if (errno < 0) {
-    const err = toError(errno)
+  try {
+    binding.fs_ext_napi_try_downgrade_lock(fd, offset, length)
+  } catch (err) {
     if (err.code === 'EAGAIN') return false
     throw err
   }
@@ -91,18 +90,19 @@ exports.waitForDowngradeLock = function downgradeLock (fd, offset = 0, length = 
     ctx.reject = reject
   })
 
-  const errno = binding.fs_ext_napi_wait_for_downgrade_lock(req, fd, offset, length, ctx, onwork)
-
-  if (errno < 0) return Promise.reject(toError(errno))
+  try {
+    binding.fs_ext_napi_wait_for_downgrade_lock(req, fd, offset, length, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 
   return promise
 }
 
 exports.tryUpgradeLock = function tryUpgradeLock (fd, offset = 0, length = 0) {
-  const errno = binding.fs_ext_napi_try_upgrade_lock(fd, offset, length)
-
-  if (errno < 0) {
-    const err = toError(errno)
+  try {
+    binding.fs_ext_napi_try_upgrade_lock(fd, offset, length)
+  } catch (err) {
     if (err.code === 'EAGAIN') return false
     throw err
   }
@@ -123,17 +123,17 @@ exports.waitForUpgradeLock = function upgradeLock (fd, offset = 0, length = 0) {
     ctx.reject = reject
   })
 
-  const errno = binding.fs_ext_napi_wait_for_upgrade_lock(req, fd, offset, length, ctx, onwork)
-
-  if (errno < 0) return Promise.reject(toError(errno))
+  try {
+    binding.fs_ext_napi_wait_for_upgrade_lock(req, fd, offset, length, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 
   return promise
 }
 
 exports.unlock = function unlock (fd, offset = 0, length = 0) {
-  const errno = binding.fs_ext_napi_unlock(fd, offset, length)
-
-  if (errno < 0) throw toError(errno)
+  binding.fs_ext_napi_unlock(fd, offset, length)
 }
 
 exports.trim = function trim (fd, offset, length) {
@@ -149,9 +149,11 @@ exports.trim = function trim (fd, offset, length) {
     ctx.reject = reject
   })
 
-  const errno = binding.fs_ext_napi_trim(req, fd, offset, length, ctx, onwork)
-
-  if (errno < 0) return Promise.reject(toError(errno))
+  try {
+    binding.fs_ext_napi_trim(req, fd, offset, length, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 
   return promise
 }
@@ -172,9 +174,11 @@ exports.sparse = function sparse (fd) {
     ctx.reject = reject
   })
 
-  const errno = binding.fs_ext_napi_sparse(req, fd, ctx, onwork)
-
-  if (errno < 0) return Promise.reject(toError(errno))
+  try {
+    binding.fs_ext_napi_sparse(req, fd, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
+  }
 
   return promise
 }
@@ -192,23 +196,11 @@ exports.swap = function swap (from, to) {
     ctx.reject = reject
   })
 
-  const errno = binding.fs_ext_napi_swap(req, from, to, ctx, onwork)
-
-  if (errno < 0) return Promise.reject(toError(errno))
-
-  return promise
-}
-
-function toError (errno) {
-  const [code, msg] = errors.get(errno)
-
-  const err = new Error(`${code}: ${msg}`)
-  err.errno = errno
-  err.code = code
-
-  if (Error.captureStackTrace) {
-    Error.captureStackTrace(err, toError)
+  try {
+    binding.fs_ext_napi_swap(req, from, to, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
   }
 
-  return err
+  return promise
 }

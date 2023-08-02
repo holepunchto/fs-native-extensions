@@ -1,0 +1,27 @@
+name: Prebuild
+on:
+  workflow_dispatch:
+jobs:
+  prebuild:
+    strategy:
+      matrix:
+        node: [lts/*]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+        - os: ubuntu-latest
+          container: ghcr.io/holepunchto/prebuild-linux
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node }}
+    - run: npm install
+    - run: npm run prebuild
+    - uses: actions/upload-artifact@v3
+      with:
+        name: prebuilds
+        path: prebuilds/*

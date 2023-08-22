@@ -1,6 +1,6 @@
 {
   "name": "fs-native-extensions",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "Native file system extensions for advanced file operations",
   "main": "index.js",
   "files": [
@@ -23,15 +23,14 @@
     "url": "git+https://github.com/holepunchto/fs-native-extensions.git"
   },
   "author": "Kasper Isager Dalsgarð <kasper@funktionel.co>",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/holepunchto/fs-native-extensions/issues"
   },
   "homepage": "https://github.com/holepunchto/fs-native-extensions#readme",
   "dependencies": {
     "napi-macros": "^2.0.0",
-    "node-gyp-build": "^4.2.3",
-    "uv-errors": "^1.0.1"
+    "node-gyp-build": "^4.2.3"
   },
   "devDependencies": {
     "brittle": "^3.1.1",

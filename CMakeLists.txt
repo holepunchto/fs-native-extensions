@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.25)
 
 project(fs_native_extensions C)
 
-include(pear)
+include(bare)
 
-pear_target(target)
+bare_target(target)
 
-add_pear_module(fs_native_extensions)
+add_bare_module(fs_native_extensions)
 
 target_sources(
   fs_native_extensions

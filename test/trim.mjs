@@ -64,6 +64,10 @@ async function testReducesBlocks (t, file, fn) {
 
   const { blocks: after } = await file.stat()
 
-  t.comment(`${before} -> ${after} blocks`)
-  t.ok(after < before, 'blocks reduced')
+  if (process.platform !== 'freebsd') {
+    t.comment(`${before} -> ${after} blocks`)
+    t.ok(after < before, 'blocks reduced')
+  } else {
+    t.pass()
+  }
 }

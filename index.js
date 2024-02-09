@@ -161,7 +161,7 @@ exports.trim = function trim (fd, offset, length) {
 
 exports.sparse = function sparse (fd) {
   // Short circuit on everything but Windows
-  if (IS_WIN) return Promise.resolve()
+  if (!IS_WIN) return Promise.resolve()
 
   const req = Buffer.alloc(binding.sizeof_fs_ext_napi_sparse_t)
   const ctx = {

@@ -9,7 +9,7 @@ bare_target(target)
 add_bare_module(fs_native_extensions)
 
 target_sources(
-  fs_native_extensions
+  ${fs_native_extensions}
   INTERFACE
     include/fs-ext.h
   PRIVATE
@@ -19,7 +19,7 @@ target_sources(
 
 if(NOT target MATCHES "win32")
   target_sources(
-    fs_native_extensions
+    ${fs_native_extensions}
     PRIVATE
       src/posix.c
   )
@@ -27,7 +27,7 @@ endif()
 
 if(target MATCHES "darwin|ios")
   target_sources(
-    fs_native_extensions
+    ${fs_native_extensions}
     PRIVATE
       src/mac.c
   )
@@ -35,7 +35,7 @@ endif()
 
 if(target MATCHES "linux|android")
   target_sources(
-    fs_native_extensions
+    ${fs_native_extensions}
     PRIVATE
       src/linux.c
   )
@@ -43,7 +43,7 @@ endif()
 
 if(target MATCHES "win32")
   target_sources(
-    fs_native_extensions
+    ${fs_native_extensions}
     PRIVATE
       src/win.c
   )

@@ -13,6 +13,7 @@
     "binding.gyp",
     "CMakeLists.txt"
   ],
+  "addon": true,
   "scripts": {
     "test": "standard && brittle test/*.mjs",
     "prebuild": "prebuildify",
@@ -38,8 +39,5 @@
     "prebuildify": "^6.0.0",
     "standard": "^17.0.0",
     "tempy": "^3.0.0"
-  },
-  "addon": {
-    "target": "fs_native_extensions"
   }
 }

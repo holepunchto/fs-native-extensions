@@ -19,7 +19,7 @@ test('explicit hole', async (t) => {
   await testTrim(t, file, 0, empty.byteLength)
 
   const read = Buffer.alloc(write.byteLength)
-  await file.read(read, 0, write.byteLength, empty.byteLength)
+  await file.read(read, 0, write.byteLength, 0)
 
   t.alike(read, write, 'file is intact')
 })

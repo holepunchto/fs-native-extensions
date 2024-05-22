@@ -1,15 +1,16 @@
 import test from 'brittle'
 import { join } from 'path'
 import { writeFile, readFile } from 'fs/promises'
-import { temporaryFile, temporaryDirectory } from 'tempy'
+import tmp from 'test-tmp'
+import { isWindows } from 'which-runtime'
 
 import { swap } from '../index.js'
 
 // TODO: Swapping is borked on Windows currently, investigate.
 
-test('swap files', { skip: process.platform === 'win32' }, async (t) => {
-  const a = temporaryFile()
-  const b = temporaryFile()
+test('swap files', { skip: isWindows }, async (t) => {
+  const a = join(await tmp(t), 'a')
+  const b = join(await tmp(t), 'b')
 
   await writeFile(a, 'a')
   await writeFile(b, 'b')
@@ -20,9 +21,9 @@ test('swap files', { skip: process.platform === 'win32' }, async (t) => {
   t.is(await readFile(b, 'utf8'), 'a')
 })
 
-test('swap directories', { skip: process.platform === 'win32' }, async (t) => {
-  const a = temporaryDirectory()
-  const b = temporaryDirectory()
+test('swap directories', { skip: isWindows }, async (t) => {
+  const a = await tmp(t)
+  const b = await tmp(t)
 
   await writeFile(join(a, 'a'), 'a')
   await writeFile(join(b, 'b'), 'b')
@@ -33,9 +34,9 @@ test('swap directories', { skip: process.platform === 'win32' }, async (t) => {
   t.is(await readFile(join(b, 'a'), 'utf8'), 'a')
 })
 
-test('swap file and directory', { skip: process.platform === 'win32' }, async (t) => {
-  const a = temporaryDirectory()
-  const b = temporaryFile()
+test('swap file and directory', { skip: isWindows }, async (t) => {
+  const a = await tmp(t)
+  const b = join(await tmp(t), 'b')
 
   await writeFile(join(a, 'a'), 'a')
   await writeFile(b, 'b')

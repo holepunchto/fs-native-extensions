@@ -1,5 +1,5 @@
+const { isWindows } = require('which-runtime')
 const binding = require('./binding')
-const IS_WIN = (typeof Bare !== 'undefined' ? global.Bare.platform : process.platform) === 'win32'
 
 function onwork (err) {
   if (err) this.reject(err)
@@ -161,7 +161,7 @@ exports.trim = function trim (fd, offset, length) {
 
 exports.sparse = function sparse (fd) {
   // Short circuit on everything but Windows
-  if (!IS_WIN) return Promise.resolve()
+  if (!isWindows) return Promise.resolve()
 
   const req = Buffer.alloc(binding.sizeof_fs_ext_napi_sparse_t)
   const ctx = {

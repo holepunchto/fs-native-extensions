@@ -1,13 +1,13 @@
 import test from 'brittle'
 import { fork } from 'child_process'
 import { open } from 'fs/promises'
-import { temporaryFile } from 'tempy'
+import { join } from 'path'
+import tmp from 'test-tmp'
+import { isWindows } from 'which-runtime'
 import { tryLock, tryDowngradeLock, tryUpgradeLock, unlock } from '../index.js'
 
-const isWindows = process.platform === 'win32'
-
 test('2 exclusive locks, same fd', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const handle = await open(file, 'w+')
   t.teardown(() => handle.close())
@@ -22,7 +22,7 @@ test('2 exclusive locks, same fd', async (t) => {
 })
 
 test('2 exclusive locks, separate fd', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => a.close())
@@ -35,7 +35,7 @@ test('2 exclusive locks, separate fd', async (t) => {
 })
 
 test('2 shared locks + 1 exclusive lock, same fd', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const handle = await open(file, 'w+')
   t.teardown(() => handle.close())
@@ -51,7 +51,7 @@ test('2 shared locks + 1 exclusive lock, same fd', async (t) => {
 })
 
 test('2 shared locks + 1 exclusive lock, separate fd', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => a.close())
@@ -77,7 +77,8 @@ test('2 shared locks + 1 exclusive lock, separate process', async (t) => {
   const shared = t.test('grant shared locks')
   shared.plan(2)
 
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
+
   const handle = await open(file, 'w+')
 
   const p1 = fork('test/fixture/lock.mjs', [file,
@@ -133,7 +134,7 @@ test('2 shared locks + 1 exclusive lock, separate process', async (t) => {
 })
 
 test('lock is released on file close', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const a = await open(file, 'w+')
 
@@ -150,7 +151,7 @@ test('lock is released on file close', async (t) => {
 })
 
 test('lock is not released on unrelated file close', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => a.close())
@@ -168,7 +169,7 @@ test('lock is not released on unrelated file close', async (t) => {
 })
 
 test('downgrade exclusive lock', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => a.close())
@@ -186,7 +187,7 @@ test('downgrade exclusive lock', async (t) => {
 })
 
 test('upgrade shared lock', async (t) => {
-  const file = temporaryFile()
+  const file = join(await tmp(t), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => a.close())

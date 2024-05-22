@@ -1,11 +1,14 @@
 import test from 'brittle'
 import { open } from 'fs/promises'
-import { temporaryFile } from 'tempy'
+import { join } from 'path'
+import tmp from 'test-tmp'
 
 import { trim, sparse } from '../index.js'
 
 test('explicit hole', async (t) => {
-  const file = await open(temporaryFile(), 'w+')
+  const file = await open(join(await tmp(t), 'test'), 'w+')
+  t.teardown(() => file.close())
+
   await sparse(file.fd)
 
   const { blksize } = await file.stat()
@@ -25,7 +28,9 @@ test('explicit hole', async (t) => {
 })
 
 test('implicit hole', async (t) => {
-  const file = await open(temporaryFile(), 'w+')
+  const file = await open(join(await tmp(t), 'test'), 'w+')
+  t.teardown(() => file.close())
+
   await sparse(file.fd)
 
   const { blksize } = await file.stat()
@@ -42,7 +47,9 @@ test('implicit hole', async (t) => {
 })
 
 test('unaligned hole', async (t) => {
-  const file = await open(temporaryFile(), 'w+')
+  const file = await open(join(await tmp(t), 'test'), 'w+')
+  t.teardown(() => file.close())
+
   await sparse(file.fd)
 
   const { blksize } = await file.stat()

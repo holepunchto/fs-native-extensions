@@ -1,5 +1,5 @@
-import { open } from 'fs/promises'
 import minimist from 'minimist'
+import { open } from '../helpers.mjs'
 import { tryLock, waitForLock } from '../../index.js'
 
 const argv = minimist(process.argv.slice(2), {
@@ -21,13 +21,13 @@ const options = {
   shared: argv.shared
 }
 
-const file = await open(argv._[0], argv.mode)
+const fd = await open(argv._[0], argv.mode)
 
-if (!tryLock(file.fd, offset, length, options)) {
+if (!tryLock(fd, offset, length, options)) {
   process.send({ granted: false })
 }
 
-await waitForLock(file.fd, offset, length, options)
+await waitForLock(fd, offset, length, options)
 
 process.send({ granted: true })
 

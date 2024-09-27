@@ -10,15 +10,26 @@ jobs:
   test:
     strategy:
       matrix:
-        node: [lts/*]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+        - os: ubuntu-latest
+          platform: linux
+          arch: x64
+        - os: macos-latest
+          platform: darwin
+          arch: arm64
+        - os: windows-latest
+          platform: win32
+          arch: x64
     runs-on: ${{ matrix.os }}
+    name: ${{ matrix.platform }}-${{ matrix.arch }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node }}
+        node-version: lts/*
+    - run: npm install -g bare-runtime bare-dev
     - run: npm install
+    - run: bare-dev install --bare --node --platform ${{ matrix.platform }} --arch ${{ matrix.arch }} --debug
     - run: npm test

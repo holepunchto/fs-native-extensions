@@ -1,9 +1,9 @@
-#include <napi-macros.h>
 #include <node_api.h>
 #include <stdlib.h>
 #include <uv.h>
 
 #include "include/fs-ext.h"
+#include "macros.h"
 
 typedef struct {
   fs_ext_lock_t req;

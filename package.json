@@ -5,19 +5,38 @@
   "main": "index.js",
   "files": [
     "index.js",
+    "macros.h",
+    "binding.c",
     "binding.js",
+    "CMakeLists.txt",
     "include",
     "src",
-    "prebuilds",
-    "binding.c",
-    "binding.gyp",
-    "CMakeLists.txt"
+    "prebuilds"
   ],
+  "imports": {
+    "child_process": {
+      "bare": "bare-subprocess",
+      "default": "child_process"
+    },
+    "fs": {
+      "bare": "bare-fs",
+      "default": "fs"
+    },
+    "fs/*": {
+      "bare": "bare-fs/*",
+      "default": "fs/*"
+    },
+    "path": {
+      "bare": "bare-path",
+      "default": "path"
+    }
+  },
   "addon": true,
   "scripts": {
-    "test": "standard && brittle test/*.mjs",
-    "prebuild": "prebuildify",
-    "install": "node-gyp-build"
+    "test": "npm run lint && npm run test:bare && npm run test:node",
+    "test:bare": "bare test/all.mjs",
+    "test:node": "node test/all.mjs",
+    "lint": "standard"
   },
   "repository": {
     "type": "git",
@@ -30,14 +49,15 @@
   },
   "homepage": "https://github.com/holepunchto/fs-native-extensions#readme",
   "dependencies": {
-    "napi-macros": "^2.0.0",
-    "node-gyp-build": "^4.2.3",
+    "load-addon": "^1.0.0",
     "which-runtime": "^1.2.0"
   },
   "devDependencies": {
+    "bare-fs": "^3.0.2",
+    "bare-path": "^3.0.0",
+    "bare-subprocess": "^4.0.1",
     "brittle": "^3.1.1",
     "minimist": "^1.2.6",
-    "prebuildify": "^6.0.0",
     "standard": "^17.0.0",
     "test-tmp": "^1.2.1"
   }

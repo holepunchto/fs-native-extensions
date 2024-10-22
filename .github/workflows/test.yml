@@ -24,12 +24,12 @@ jobs:
     name: ${{ matrix.platform }}-${{ matrix.arch }}
     steps:
     - uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - run: npm install -g bare-runtime bare-dev
+    - run: npm install -g bare-runtime bare-make
     - run: npm install
-    - run: bare-dev install --bare --node --platform ${{ matrix.platform }} --arch ${{ matrix.arch }} --debug
+    - run: bare-make generate --platform ${{ matrix.platform }} --arch ${{ matrix.arch }} --debug
+    - run: bare-make build
+    - run: bare-make install
     - run: npm test

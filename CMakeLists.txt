@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(fs_native_extensions C)
+find_package(cmake-bare REQUIRED PATHS node_modules/cmake-bare)
+find_package(cmake-napi REQUIRED PATHS node_modules/cmake-napi)
 
-include(bare)
-include(napi)
+project(fs_native_extensions C)
 
 bare_target(target)
 

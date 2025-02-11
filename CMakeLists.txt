@@ -7,6 +7,10 @@ project(fs_native_extensions C)
 
 bare_target(target)
 
+if(target MATCHES "win32")
+  add_compile_options(/MT$<$<CONFIG:Debug>:d>)
+endif()
+
 set(sources binding.c src/shared.c)
 
 if(NOT target MATCHES "win32")

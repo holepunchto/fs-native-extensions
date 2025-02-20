@@ -49,7 +49,7 @@
   },
   "homepage": "https://github.com/holepunchto/fs-native-extensions#readme",
   "dependencies": {
-    "node-gyp-build": "^4.8.2",
+    "require-addon": "^1.1.0",
     "which-runtime": "^1.2.0"
   },
   "devDependencies": {

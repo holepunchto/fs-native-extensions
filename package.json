@@ -1,6 +1,6 @@
 {
   "name": "fs-native-extensions",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "description": "Native file system extensions for advanced file operations",
   "main": "index.js",
   "files": [

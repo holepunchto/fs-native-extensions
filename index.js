@@ -260,7 +260,9 @@ exports.getAttr = function getAttr(fd, name) {
     return Promise.reject(err)
   }
 
-  return promise.then((buffer) => Buffer.from(buffer))
+  return promise.then((buffer) =>
+    buffer === null ? null : Buffer.from(buffer)
+  )
 }
 
 exports.setAttr = function setAttr(fd, name, value, encoding) {

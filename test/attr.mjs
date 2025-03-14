@@ -3,7 +3,7 @@ import { join } from 'path'
 import tmp from 'test-tmp'
 import { open, close } from './helpers.mjs'
 
-import { getAttr, setAttr, listAttrs } from '../index.js'
+import { getAttr, setAttr, removeAttr, listAttrs } from '../index.js'
 
 test('set and get attribute', async (t) => {
   const file = join(await tmp(t), 'test')
@@ -14,6 +14,28 @@ test('set and get attribute', async (t) => {
   await setAttr(fd, 'user.hello', 'hello world')
 
   t.alike(await getAttr(fd, 'user.hello'), Buffer.from('hello world'))
+})
+
+test('get missing attribute', async (t) => {
+  const file = join(await tmp(t), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  t.is(await getAttr(fd, 'user.hello'), null)
+})
+
+test('set and remove attribute', async (t) => {
+  const file = join(await tmp(t), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  await setAttr(fd, 'user.hello', 'hello world')
+
+  await removeAttr(fd, 'user.hello')
+
+  t.is(await getAttr(fd, 'user.hello'), null)
 })
 
 test('set and list attributes', async (t) => {

@@ -152,12 +152,12 @@ typedef VOID(NTAPI *PIO_APC_ROUTINE)(
 );
 
 __kernel_entry NTSYSCALLAPI NTSTATUS NTAPI
-NtClose (
+NtClose(
   IN HANDLE Handle
 );
 
 __kernel_entry NTSYSCALLAPI NTSTATUS NTAPI
-NtCreateFile (
+NtCreateFile(
   OUT PHANDLE FileHandle,
   IN ACCESS_MASK DesiredAccess,
   IN POBJECT_ATTRIBUTES ObjectAttributes,
@@ -172,7 +172,7 @@ NtCreateFile (
 );
 
 __kernel_entry NTSYSCALLAPI NTSTATUS NTAPI
-NtOpenFile (
+NtOpenFile(
   OUT PHANDLE FileHandle,
   IN ACCESS_MASK DesiredAccess,
   IN POBJECT_ATTRIBUTES ObjectAttributes,
@@ -182,7 +182,7 @@ NtOpenFile (
 );
 
 __kernel_entry NTSYSCALLAPI NTSTATUS NTAPI
-NtReadFile (
+NtReadFile(
   IN HANDLE FileHandle,
   IN HANDLE Event,
   IN PIO_APC_ROUTINE ApcRoutine,
@@ -195,7 +195,7 @@ NtReadFile (
 );
 
 __kernel_entry NTSYSCALLAPI NTSTATUS NTAPI
-NtWriteFile (
+NtWriteFile(
   IN HANDLE FileHandle,
   IN HANDLE Event,
   IN PIO_APC_ROUTINE ApcRoutine,
@@ -208,7 +208,12 @@ NtWriteFile (
 );
 
 __kernel_entry NTSYSCALLAPI NTSTATUS NTAPI
-NtQueryInformationFile (
+NtDeleteFile(
+  IN POBJECT_ATTRIBUTES ObjectAttributes
+);
+
+__kernel_entry NTSYSCALLAPI NTSTATUS NTAPI
+NtQueryInformationFile(
   IN HANDLE FileHandle,
   OUT PIO_STATUS_BLOCK IoStatusBlock,
   OUT PVOID FileInformation,

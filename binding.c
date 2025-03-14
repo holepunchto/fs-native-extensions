@@ -238,7 +238,7 @@ on_fs_ext_get_attr(fs_ext_get_attr_t *req, int status, const uv_buf_t *value) {
   napi_value callback;
   napi_get_reference_value(env, r->cb, &callback);
 
-  if (req->result < 0) {
+  if (req->result < 0 && req->result != UV_ENOENT) {
     napi_value code;
     napi_create_string_utf8(env, uv_err_name(req->result), -1, &code);
 
@@ -251,10 +251,14 @@ on_fs_ext_get_attr(fs_ext_get_attr_t *req, int status, const uv_buf_t *value) {
   } else {
     napi_get_null(env, &argv[0]);
 
-    void *data;
-    napi_create_arraybuffer(env, value->len, &data, &argv[1]);
+    if (req->result == UV_ENOENT) {
+      napi_get_null(env, &argv[1]);
+    } else {
+      void *data;
+      napi_create_arraybuffer(env, value->len, &data, &argv[1]);
 
-    memcpy(data, value->base, value->len);
+      memcpy(data, value->base, value->len);
+    }
   }
 
   NAPI_MAKE_CALLBACK(env, NULL, ctx, callback, 2, argv, NULL);

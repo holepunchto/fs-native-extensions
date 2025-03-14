@@ -234,7 +234,11 @@ fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
     0
   );
 
-  if (res < 0) return -1;
+  if (res < 0) {
+    if (res == STATUS_OBJECT_NAME_NOT_FOUND) return UV_ENOENT;
+
+    return UV_EIO;
+  }
 
   FILE_STANDARD_INFORMATION info;
 
@@ -248,7 +252,8 @@ fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
 
   if (res < 0) {
     NtClose(stream_handle);
-    return -1;
+
+    return UV_EIO;
   }
 
   size_t length = info.EndOfFile.QuadPart;
@@ -273,7 +278,7 @@ fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
 
   NtClose(stream_handle);
 
-  if (res < 0) return -1;
+  if (res < 0) return UV_EIO;
 
   return 0;
 }
@@ -318,7 +323,7 @@ fs_ext__set_attr(uv_os_fd_t fd, const char *name, const uv_buf_t *value) {
     0
   );
 
-  if (res < 0) return -1;
+  if (res < 0) return UV_EIO;
 
   LARGE_INTEGER offset = {
     .QuadPart = 0,
@@ -338,14 +343,55 @@ fs_ext__set_attr(uv_os_fd_t fd, const char *name, const uv_buf_t *value) {
 
   NtClose(stream_handle);
 
-  if (res < 0) return -1;
+  if (res < 0) return UV_EIO;
 
   return 0;
 }
 
 int
 fs_ext__remove_attr(uv_os_fd_t fd, const char *name) {
-  return UV_ENOSYS;
+  HANDLE handle = fd;
+  HANDLE stream_handle;
+
+  size_t len = strlen(name);
+
+  WCHAR unicode_name[MAX_PATH] = L":";
+  MultiByteToWideChar(CP_OEMCP, 0, name, -1, &unicode_name[1], len + 1);
+
+  len = wcslen(unicode_name) * 2;
+
+  UNICODE_STRING object_name = {
+    .Length = len,
+    .MaximumLength = len + 2,
+    .Buffer = unicode_name,
+  };
+
+  OBJECT_ATTRIBUTES object_attributes = {
+    .Length = sizeof(object_attributes),
+    .RootDirectory = handle,
+    .ObjectName = &object_name,
+  };
+
+  IO_STATUS_BLOCK status;
+
+  NTSTATUS res = NtOpenFile(
+    &stream_handle,
+    DELETE,
+    &object_attributes,
+    &status,
+    FILE_SHARE_DELETE,
+    0
+  );
+
+  if (res < 0) return UV_EIO;
+
+  res = NtDeleteFile(&object_attributes);
+
+  NtClose(stream_handle);
+
+  if (res < 0) return UV_EIO;
+
+  return 0;
 }
 
 int
@@ -378,7 +424,7 @@ fs_ext__list_attrs(uv_os_fd_t fd, char **names, size_t *length) {
     }
   } while (true);
 
-  if (res < 0) return -1;
+  if (res < 0) return UV_EIO;
 
   PFILE_STREAM_INFORMATION next = info;
 

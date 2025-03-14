@@ -39,6 +39,14 @@ target_sources(
     ${sources}
 )
 
+if(target MATCHES "win32")
+  target_link_libraries(
+    ${fs_native_extensions_bare}
+    PUBLIC
+      ntdll
+  )
+endif()
+
 add_napi_module(fs_native_extensions_node)
 
 target_sources(
@@ -48,3 +56,11 @@ target_sources(
   PRIVATE
     ${sources}
 )
+
+if(target MATCHES "win32")
+  target_link_libraries(
+    ${fs_native_extensions_node}
+    PUBLIC
+      ntdll
+  )
+endif()

@@ -14,6 +14,10 @@ typedef struct fs_ext_lock_s fs_ext_lock_t;
 typedef struct fs_ext_trim_s fs_ext_trim_t;
 typedef struct fs_ext_sparse_s fs_ext_sparse_t;
 typedef struct fs_ext_swap_s fs_ext_swap_t;
+typedef struct fs_ext_get_attr_s fs_ext_get_attr_t;
+typedef struct fs_ext_set_attr_s fs_ext_set_attr_t;
+typedef struct fs_ext_remove_attr_s fs_ext_remove_attr_t;
+typedef struct fs_ext_list_attrs_s fs_ext_list_attrs_t;
 
 // Callbacks
 
@@ -21,6 +25,10 @@ typedef void (*fs_ext_lock_cb)(fs_ext_lock_t *req, int status);
 typedef void (*fs_ext_trim_cb)(fs_ext_trim_t *req, int status);
 typedef void (*fs_ext_sparse_cb)(fs_ext_sparse_t *req, int status);
 typedef void (*fs_ext_swap_cb)(fs_ext_swap_t *req, int status);
+typedef void (*fs_ext_get_attr_cb)(fs_ext_get_attr_t *req, int status, const uv_buf_t *value);
+typedef void (*fs_ext_set_attr_cb)(fs_ext_set_attr_t *req, int status);
+typedef void (*fs_ext_remove_attr_cb)(fs_ext_remove_attr_t *req, int status);
+typedef void (*fs_ext_list_attrs_cb)(fs_ext_list_attrs_t *req, int status, const char *attrs[], ssize_t len);
 
 typedef enum {
   FS_EXT_RDLOCK = 1,
@@ -81,6 +89,61 @@ struct fs_ext_swap_s {
   void *data;
 };
 
+struct fs_ext_get_attr_s {
+  uv_work_t req;
+
+  uv_os_fd_t fd;
+  const char *name;
+  uv_buf_t value;
+
+  fs_ext_get_attr_cb cb;
+
+  int result;
+
+  void *data;
+};
+
+struct fs_ext_set_attr_s {
+  uv_work_t req;
+
+  uv_os_fd_t fd;
+  const char *name;
+  const uv_buf_t *value;
+
+  fs_ext_set_attr_cb cb;
+
+  int result;
+
+  void *data;
+};
+
+struct fs_ext_remove_attr_s {
+  uv_work_t req;
+
+  uv_os_fd_t fd;
+  const char *name;
+
+  fs_ext_remove_attr_cb cb;
+
+  int result;
+
+  void *data;
+};
+
+struct fs_ext_list_attrs_s {
+  uv_work_t req;
+
+  uv_os_fd_t fd;
+  char *names;
+  size_t length;
+
+  fs_ext_list_attrs_cb cb;
+
+  int result;
+
+  void *data;
+};
+
 int
 fs_ext_try_lock(uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type);
 
@@ -110,6 +173,18 @@ fs_ext_sparse(uv_loop_t *loop, fs_ext_sparse_t *req, uv_os_fd_t fd, fs_ext_spars
 
 int
 fs_ext_swap(uv_loop_t *loop, fs_ext_swap_t *req, const char *from, const char *to, fs_ext_swap_cb cb);
+
+int
+fs_ext_get_attr(uv_loop_t *loop, fs_ext_get_attr_t *req, uv_os_fd_t fd, const char *name, fs_ext_get_attr_cb cb);
+
+int
+fs_ext_set_attr(uv_loop_t *loop, fs_ext_set_attr_t *req, uv_os_fd_t fd, const char *name, const uv_buf_t *value, fs_ext_set_attr_cb cb);
+
+int
+fs_ext_remove_attr(uv_loop_t *loop, fs_ext_remove_attr_t *req, uv_os_fd_t fd, const char *name, fs_ext_remove_attr_cb cb);
+
+int
+fs_ext_list_attrs(uv_loop_t *loop, fs_ext_list_attrs_t *req, uv_os_fd_t fd, fs_ext_list_attrs_cb cb);
 
 #ifdef __cplusplus
 }

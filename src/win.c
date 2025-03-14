@@ -383,7 +383,11 @@ fs_ext__remove_attr(uv_os_fd_t fd, const char *name) {
     0
   );
 
-  if (res < 0) return UV_EIO;
+  if (res < 0) {
+    if (res == STATUS_OBJECT_NAME_NOT_FOUND) return UV_ENODATA;
+
+    return UV_EIO;
+  }
 
   res = NtDeleteFile(&object_attributes);
 

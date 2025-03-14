@@ -38,6 +38,15 @@ test('set and remove attribute', async (t) => {
   t.is(await getAttr(fd, 'user.hello'), null)
 })
 
+test('remove missing attribute', async (t) => {
+  const file = join(await tmp(t), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  await removeAttr(fd, 'user.hello')
+})
+
 test('set and list attributes', async (t) => {
   const file = join(await tmp(t), 'test')
 

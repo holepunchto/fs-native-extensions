@@ -121,7 +121,11 @@ int
 fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
   int res = fgetxattr(fd, name, NULL, 0, 0, 0);
 
-  if (res == -1) return uv_translate_sys_error(errno);
+  if (res == -1) {
+    if (errno == ENOATTR) return UV_ENODATA;
+
+    return uv_translate_sys_error(errno);
+  }
 
   *value = uv_buf_init(malloc(res), res);
 
@@ -141,7 +145,13 @@ int
 fs_ext__remove_attr(uv_os_fd_t fd, const char *name) {
   int res = fremovexattr(fd, name, 0);
 
-  return res == -1 ? uv_translate_sys_error(errno) : 0;
+  if (res == -1) {
+    if (errno == ENOATTR) return UV_ENODATA;
+
+    return uv_translate_sys_error(errno);
+  }
+
+  return 0;
 }
 
 int

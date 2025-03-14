@@ -198,6 +198,7 @@ fs_ext__swap(const char *from, const char *to) {
 
   return fs_ext__move(swap, from);
 }
+
 int
 fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
   HANDLE handle = fd;

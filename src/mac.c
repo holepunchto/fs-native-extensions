@@ -2,6 +2,8 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/xattr.h>
 #include <unistd.h>
 #include <uv.h>
 
@@ -113,4 +115,72 @@ fs_ext__swap(const char *from, const char *to) {
   int res = renameatx_np(AT_FDCWD, from, AT_FDCWD, to, RENAME_SWAP);
 
   return res == -1 ? uv_translate_sys_error(errno) : res;
+}
+
+int
+fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
+  int res = fgetxattr(fd, name, NULL, 0, 0, 0);
+
+  if (res == -1) return uv_translate_sys_error(errno);
+
+  *value = uv_buf_init(malloc(res), res);
+
+  res = fgetxattr(fd, name, value->base, value->len, 0, 0);
+
+  return res == -1 ? uv_translate_sys_error(errno) : 0;
+}
+
+int
+fs_ext__set_attr(uv_os_fd_t fd, const char *name, const uv_buf_t *value) {
+  int res = fsetxattr(fd, name, value->base, value->len, 0, 0);
+
+  return res == -1 ? uv_translate_sys_error(errno) : 0;
+}
+
+int
+fs_ext__remove_attr(uv_os_fd_t fd, const char *name) {
+  int res = fremovexattr(fd, name, 0);
+
+  return res == -1 ? uv_translate_sys_error(errno) : 0;
+}
+
+int
+fs_ext__list_attrs(uv_os_fd_t fd, char **names, size_t *length) {
+  int res = flistxattr(fd, NULL, 0, 0);
+
+  if (res == -1) return uv_translate_sys_error(errno);
+
+  *names = malloc(res);
+  *length = res;
+
+  res = flistxattr(fd, *names, *length, 0);
+
+  if (res == -1) return uv_translate_sys_error(errno);
+
+  size_t i = 0, j = 0, n = *length;
+
+  *length = 0;
+
+  while (i < n) {
+    i += strlen(*names + i) + 1;
+    *length += 1;
+  }
+
+  size_t offset = *length * sizeof(char *);
+
+  *names = realloc(*names, offset + n);
+
+  memmove(*names + offset, *names, n);
+
+  i = 0;
+
+  while (i < n) {
+    char *name = *names + offset + i;
+    i += strlen(name) + 1;
+
+    memcpy(*names + j, &name, sizeof(char *));
+    j += sizeof(char *);
+  }
+
+  return 0;
 }

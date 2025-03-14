@@ -235,7 +235,7 @@ fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
   );
 
   if (res < 0) {
-    if (res == STATUS_OBJECT_NAME_NOT_FOUND) return UV_ENOENT;
+    if (res == STATUS_OBJECT_NAME_NOT_FOUND) return UV_ENODATA;
 
     return UV_EIO;
   }

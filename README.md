@@ -10,7 +10,7 @@ npm install fs-native-extensions
 
 Write to a file using an exclusive lock:
 
-``` js
+```js
 const { open } = require('fs/promises')
 const { waitForLock, unlock } = require('fs-native-extensions')
 

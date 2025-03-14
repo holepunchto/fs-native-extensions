@@ -1,12 +1,12 @@
 const { isWindows } = require('which-runtime')
 const binding = require('./binding')
 
-function onwork (err) {
+function onwork(err) {
   if (err) this.reject(err)
   else this.resolve()
 }
 
-exports.tryLock = function tryLock (fd, offset = 0, length = 0, opts = {}) {
+exports.tryLock = function tryLock(fd, offset = 0, length = 0, opts = {}) {
   if (typeof offset === 'object') {
     opts = offset
     offset = 0
@@ -31,7 +31,12 @@ exports.tryLock = function tryLock (fd, offset = 0, length = 0, opts = {}) {
   return true
 }
 
-exports.waitForLock = function waitForLock (fd, offset = 0, length = 0, opts = {}) {
+exports.waitForLock = function waitForLock(
+  fd,
+  offset = 0,
+  length = 0,
+  opts = {}
+) {
   if (typeof offset === 'object') {
     opts = offset
     offset = 0
@@ -59,7 +64,15 @@ exports.waitForLock = function waitForLock (fd, offset = 0, length = 0, opts = {
   })
 
   try {
-    binding.fs_ext_napi_wait_for_lock(req, fd, offset, length, opts.shared ? 0 : 1, ctx, onwork)
+    binding.fs_ext_napi_wait_for_lock(
+      req,
+      fd,
+      offset,
+      length,
+      opts.shared ? 0 : 1,
+      ctx,
+      onwork
+    )
   } catch (err) {
     return Promise.reject(err)
   }
@@ -67,7 +80,11 @@ exports.waitForLock = function waitForLock (fd, offset = 0, length = 0, opts = {
   return promise
 }
 
-exports.tryDowngradeLock = function tryDowngradeLock (fd, offset = 0, length = 0) {
+exports.tryDowngradeLock = function tryDowngradeLock(
+  fd,
+  offset = 0,
+  length = 0
+) {
   try {
     binding.fs_ext_napi_try_downgrade_lock(fd, offset, length)
   } catch (err) {
@@ -78,7 +95,11 @@ exports.tryDowngradeLock = function tryDowngradeLock (fd, offset = 0, length = 0
   return true
 }
 
-exports.waitForDowngradeLock = function downgradeLock (fd, offset = 0, length = 0) {
+exports.waitForDowngradeLock = function downgradeLock(
+  fd,
+  offset = 0,
+  length = 0
+) {
   const req = Buffer.alloc(binding.sizeof_fs_ext_napi_lock_t)
   const ctx = {
     req,
@@ -92,7 +113,14 @@ exports.waitForDowngradeLock = function downgradeLock (fd, offset = 0, length = 
   })
 
   try {
-    binding.fs_ext_napi_wait_for_downgrade_lock(req, fd, offset, length, ctx, onwork)
+    binding.fs_ext_napi_wait_for_downgrade_lock(
+      req,
+      fd,
+      offset,
+      length,
+      ctx,
+      onwork
+    )
   } catch (err) {
     return Promise.reject(err)
   }
@@ -100,7 +128,7 @@ exports.waitForDowngradeLock = function downgradeLock (fd, offset = 0, length = 
   return promise
 }
 
-exports.tryUpgradeLock = function tryUpgradeLock (fd, offset = 0, length = 0) {
+exports.tryUpgradeLock = function tryUpgradeLock(fd, offset = 0, length = 0) {
   try {
     binding.fs_ext_napi_try_upgrade_lock(fd, offset, length)
   } catch (err) {
@@ -111,7 +139,7 @@ exports.tryUpgradeLock = function tryUpgradeLock (fd, offset = 0, length = 0) {
   return true
 }
 
-exports.waitForUpgradeLock = function upgradeLock (fd, offset = 0, length = 0) {
+exports.waitForUpgradeLock = function upgradeLock(fd, offset = 0, length = 0) {
   const req = Buffer.alloc(binding.sizeof_fs_ext_napi_lock_t)
   const ctx = {
     req,
@@ -125,7 +153,14 @@ exports.waitForUpgradeLock = function upgradeLock (fd, offset = 0, length = 0) {
   })
 
   try {
-    binding.fs_ext_napi_wait_for_upgrade_lock(req, fd, offset, length, ctx, onwork)
+    binding.fs_ext_napi_wait_for_upgrade_lock(
+      req,
+      fd,
+      offset,
+      length,
+      ctx,
+      onwork
+    )
   } catch (err) {
     return Promise.reject(err)
   }
@@ -133,11 +168,11 @@ exports.waitForUpgradeLock = function upgradeLock (fd, offset = 0, length = 0) {
   return promise
 }
 
-exports.unlock = function unlock (fd, offset = 0, length = 0) {
+exports.unlock = function unlock(fd, offset = 0, length = 0) {
   binding.fs_ext_napi_unlock(fd, offset, length)
 }
 
-exports.trim = function trim (fd, offset, length) {
+exports.trim = function trim(fd, offset, length) {
   const req = Buffer.alloc(binding.sizeof_fs_ext_napi_trim_t)
   const ctx = {
     req,
@@ -159,7 +194,7 @@ exports.trim = function trim (fd, offset, length) {
   return promise
 }
 
-exports.sparse = function sparse (fd) {
+exports.sparse = function sparse(fd) {
   // Short circuit on everything but Windows
   if (!isWindows) return Promise.resolve()
 
@@ -184,7 +219,7 @@ exports.sparse = function sparse (fd) {
   return promise
 }
 
-exports.swap = function swap (from, to) {
+exports.swap = function swap(from, to) {
   const req = Buffer.alloc(binding.sizeof_fs_ext_napi_swap_t)
   const ctx = {
     req,

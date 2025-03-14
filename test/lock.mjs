@@ -73,67 +73,65 @@ test('2 shared locks + 1 exclusive lock, separate fd', async (t) => {
   t.ok(tryLock(c), 'lock granted')
 })
 
-test('2 shared locks + 1 exclusive lock, separate process', { skip: isBare }, async (t) => {
-  const { fork } = await import('child_process')
+test(
+  '2 shared locks + 1 exclusive lock, separate process',
+  { skip: isBare },
+  async (t) => {
+    const { fork } = await import('child_process')
 
-  const shared = t.test('grant shared locks')
-  shared.plan(2)
+    const shared = t.test('grant shared locks')
+    shared.plan(2)
 
-  const file = join(await tmp(t), 'test')
+    const file = join(await tmp(t), 'test')
 
-  const fd = await open(file, 'w+')
+    const fd = await open(file, 'w+')
 
-  const p1 = fork('test/fixture/lock.mjs', [file,
-    '--mode', 'r',
-    '--shared'
-  ])
-  const p2 = fork('test/fixture/lock.mjs', [file,
-    '--mode', 'r',
-    '--shared'
-  ])
+    const p1 = fork('test/fixture/lock.mjs', [file, '--mode', 'r', '--shared'])
+    const p2 = fork('test/fixture/lock.mjs', [file, '--mode', 'r', '--shared'])
 
-  p1.on('message', (message) => {
-    shared.alike(message, { granted: true }, 'lock granted')
-  })
+    p1.on('message', (message) => {
+      shared.alike(message, { granted: true }, 'lock granted')
+    })
 
-  p2.on('message', (message) => {
-    shared.alike(message, { granted: true }, 'lock granted')
-  })
+    p2.on('message', (message) => {
+      shared.alike(message, { granted: true }, 'lock granted')
+    })
 
-  await shared
+    await shared
 
-  const deny = t.test('deny exclusive lock')
-  deny.plan(1)
+    const deny = t.test('deny exclusive lock')
+    deny.plan(1)
 
-  const p3 = fork('test/fixture/lock.mjs', [file])
+    const p3 = fork('test/fixture/lock.mjs', [file])
 
-  p3.once('message', (message) => {
-    deny.alike(message, { granted: false }, 'lock denied')
-  })
+    p3.once('message', (message) => {
+      deny.alike(message, { granted: false }, 'lock denied')
+    })
 
-  await deny
+    await deny
 
-  const release = t.test('release shared locks')
-  release.plan(2)
+    const release = t.test('release shared locks')
+    release.plan(2)
 
-  p1.on('close', () => release.pass('lock released')).kill()
-  p2.on('close', () => release.pass('lock released')).kill()
+    p1.on('close', () => release.pass('lock released')).kill()
+    p2.on('close', () => release.pass('lock released')).kill()
 
-  await release
+    await release
 
-  const grant = t.test('grant exclusive lock')
-  grant.plan(1)
+    const grant = t.test('grant exclusive lock')
+    grant.plan(1)
 
-  p3.on('message', (message) => {
-    grant.alike(message, { granted: true }, 'lock granted')
-  })
+    p3.on('message', (message) => {
+      grant.alike(message, { granted: true }, 'lock granted')
+    })
 
-  await grant
+    await grant
 
-  p3.kill()
+    p3.kill()
 
-  await close(fd)
-})
+    await close(fd)
+  }
+)
 
 test('lock is released on file close', async (t) => {
   const file = join(await tmp(t), 'test')

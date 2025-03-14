@@ -60,11 +60,11 @@ test('unaligned hole', async (t) => {
   await testTrim(t, fd, blksize / 2, empty.byteLength)
 })
 
-async function testTrim (t, fd, offset, length) {
+async function testTrim(t, fd, offset, length) {
   await testReducesBlocks(t, fd, () => trim(fd, offset, length))
 }
 
-async function testReducesBlocks (t, fd, fn) {
+async function testReducesBlocks(t, fd, fn) {
   const { blocks: before } = await stat(fd)
 
   await fn()

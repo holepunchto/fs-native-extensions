@@ -9,7 +9,7 @@
 #include "platform.h"
 
 int
-fs_ext__try_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
+fs_ext__try_lock(uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
   if (offset != 0 || length != 0) return UV_EINVAL;
 
   int res = flock(fd, (type == FS_EXT_WRLOCK ? LOCK_EX : LOCK_SH) | LOCK_NB);
@@ -18,7 +18,7 @@ fs_ext__try_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_typ
 }
 
 int
-fs_ext__wait_for_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
+fs_ext__wait_for_lock(uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
   if (offset != 0 || length != 0) return UV_EINVAL;
 
   int res = flock(fd, type == FS_EXT_WRLOCK ? LOCK_EX : LOCK_SH);
@@ -27,7 +27,7 @@ fs_ext__wait_for_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_loc
 }
 
 int
-fs_ext__unlock (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__unlock(uv_os_fd_t fd, uint64_t offset, size_t length) {
   if (offset != 0 || length != 0) return UV_EINVAL;
 
   int res = flock(fd, LOCK_UN);
@@ -36,22 +36,22 @@ fs_ext__unlock (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 static inline size_t
-fs_ext__align_up (size_t n, size_t align) {
+fs_ext__align_up(size_t n, size_t align) {
   return (n + (align - 1)) & -align;
 }
 
 static inline size_t
-fs_ext__align_down (size_t n, size_t align) {
+fs_ext__align_down(size_t n, size_t align) {
   return n & -align;
 }
 
 static inline size_t
-fs_ext__min (size_t a, size_t b) {
+fs_ext__min(size_t a, size_t b) {
   return a < b ? a : b;
 }
 
 int
-fs_ext__trim (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__trim(uv_os_fd_t fd, uint64_t offset, size_t length) {
   struct stat st;
 
   int res = fstat(fd, &st);
@@ -109,7 +109,7 @@ fs_ext__trim (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 int
-fs_ext__swap (const char *from, const char *to) {
+fs_ext__swap(const char *from, const char *to) {
   int res = renameatx_np(AT_FDCWD, from, AT_FDCWD, to, RENAME_SWAP);
 
   return res == -1 ? uv_translate_sys_error(errno) : res;

@@ -7,7 +7,7 @@
 #include "platform.h"
 
 int
-fs_ext__try_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
+fs_ext__try_lock(uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
   if (length == 0) length = SIZE_MAX;
 
   DWORD flags = LOCKFILE_FAIL_IMMEDIATELY;
@@ -33,7 +33,7 @@ fs_ext__try_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_typ
 }
 
 int
-fs_ext__wait_for_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
+fs_ext__wait_for_lock(uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {
   if (length == 0) length = SIZE_MAX;
 
   DWORD flags = 0;
@@ -59,7 +59,7 @@ fs_ext__wait_for_lock (uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_loc
 }
 
 int
-fs_ext__try_downgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__try_downgrade_lock(uv_os_fd_t fd, uint64_t offset, size_t length) {
   int res = fs_ext__try_lock(fd, offset, length, FS_EXT_RDLOCK);
   if (res < 0) return res;
 
@@ -67,7 +67,7 @@ fs_ext__try_downgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 int
-fs_ext__wait_for_downgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__wait_for_downgrade_lock(uv_os_fd_t fd, uint64_t offset, size_t length) {
   int res = fs_ext__wait_for_lock(fd, offset, length, FS_EXT_RDLOCK);
   if (res < 0) return res;
 
@@ -75,7 +75,7 @@ fs_ext__wait_for_downgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) 
 }
 
 int
-fs_ext__try_upgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__try_upgrade_lock(uv_os_fd_t fd, uint64_t offset, size_t length) {
   int res = fs_ext__unlock(fd, offset, length);
   if (res < 0) return res;
 
@@ -83,7 +83,7 @@ fs_ext__try_upgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 int
-fs_ext__wait_for_upgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__wait_for_upgrade_lock(uv_os_fd_t fd, uint64_t offset, size_t length) {
   int res = fs_ext__unlock(fd, offset, length);
   if (res < 0) return res;
 
@@ -91,7 +91,7 @@ fs_ext__wait_for_upgrade_lock (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 int
-fs_ext__unlock (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__unlock(uv_os_fd_t fd, uint64_t offset, size_t length) {
   if (length == 0) length = SIZE_MAX;
 
   OVERLAPPED data = {
@@ -112,7 +112,7 @@ fs_ext__unlock (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 int
-fs_ext__trim (uv_os_fd_t fd, uint64_t offset, size_t length) {
+fs_ext__trim(uv_os_fd_t fd, uint64_t offset, size_t length) {
   FILE_ZERO_DATA_INFORMATION data = {
     .FileOffset = {
       .QuadPart = offset,
@@ -139,7 +139,7 @@ fs_ext__trim (uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 int
-fs_ext__sparse (uv_os_fd_t fd) {
+fs_ext__sparse(uv_os_fd_t fd) {
   DWORD bytes;
 
   BOOL res = DeviceIoControl(
@@ -157,7 +157,7 @@ fs_ext__sparse (uv_os_fd_t fd) {
 }
 
 static int
-fs_ext__temp_path (char *path) {
+fs_ext__temp_path(char *path) {
   TCHAR temp_path[MAX_PATH];
 
   DWORD bytes = GetTempPath(MAX_PATH, temp_path);
@@ -170,7 +170,7 @@ fs_ext__temp_path (char *path) {
 }
 
 static int
-fs_ext__move (const char *from, const char *to) {
+fs_ext__move(const char *from, const char *to) {
   BOOL res = MoveFileEx(
     from,
     to,
@@ -181,7 +181,7 @@ fs_ext__move (const char *from, const char *to) {
 }
 
 int
-fs_ext__swap (const char *from, const char *to) {
+fs_ext__swap(const char *from, const char *to) {
   TCHAR swap[MAX_PATH];
 
   int err = fs_ext__temp_path(swap);

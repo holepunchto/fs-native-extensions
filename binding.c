@@ -649,7 +649,7 @@ NAPI_METHOD(fs_ext_napi_get_attr) {
   int err = fs_ext_get_attr(
     loop,
     (fs_ext_get_attr_t *) req,
-    fd,
+    uv_get_osfhandle(fd),
     name,
     on_fs_ext_get_attr
   );
@@ -681,7 +681,7 @@ NAPI_METHOD(fs_ext_napi_set_attr) {
   int err = fs_ext_set_attr(
     loop,
     (fs_ext_set_attr_t *) req,
-    fd,
+    uv_get_osfhandle(fd),
     name,
     &buf,
     on_fs_ext_set_attr
@@ -711,7 +711,7 @@ NAPI_METHOD(fs_ext_napi_remove_attr) {
   int err = fs_ext_remove_attr(
     loop,
     (fs_ext_remove_attr_t *) req,
-    fd,
+    uv_get_osfhandle(fd),
     name,
     on_fs_ext_remove_attr
   );
@@ -739,7 +739,7 @@ NAPI_METHOD(fs_ext_napi_list_attrs) {
   int err = fs_ext_list_attrs(
     loop,
     (fs_ext_list_attrs_t *) req,
-    fd,
+    uv_get_osfhandle(fd),
     on_fs_ext_list_attrs
   );
 

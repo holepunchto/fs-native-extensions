@@ -287,3 +287,47 @@ exports.setAttr = function setAttr(fd, name, value, encoding) {
 
   return promise
 }
+
+exports.removeAttr = function removeAttr(fd, name) {
+  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_remove_attr_t)
+  const ctx = {
+    req,
+    resolve: null,
+    reject: null
+  }
+
+  const promise = new Promise((resolve, reject) => {
+    ctx.resolve = resolve
+    ctx.reject = reject
+  })
+
+  try {
+    binding.fs_ext_napi_remove_attr(req, fd, name, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
+  }
+
+  return promise
+}
+
+exports.listAttrs = function listAttrs(fd) {
+  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_list_attrs_t)
+  const ctx = {
+    req,
+    resolve: null,
+    reject: null
+  }
+
+  const promise = new Promise((resolve, reject) => {
+    ctx.resolve = resolve
+    ctx.reject = reject
+  })
+
+  try {
+    binding.fs_ext_napi_list_attrs(req, fd, ctx, onwork)
+  } catch (err) {
+    return Promise.reject(err)
+  }
+
+  return promise
+}

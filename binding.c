@@ -374,6 +374,15 @@ on_fs_ext_list_attrs(fs_ext_list_attrs_t *req, int status, const char *attrs[], 
     napi_get_null(env, &argv[1]);
   } else {
     napi_get_null(env, &argv[0]);
+
+    napi_create_array_with_length(env, len, &argv[1]);
+
+    for (size_t i = 0; i < len; i++) {
+      napi_value value;
+      napi_create_string_utf8(env, attrs[i], -1, &value);
+
+      napi_set_element(env, argv[1], i, value);
+    }
   }
 
   NAPI_MAKE_CALLBACK(env, NULL, ctx, callback, 2, argv, NULL);

@@ -97,6 +97,22 @@ On Windows, the swap is performed by first moving `to` to a temporary path, then
 
 On macOS and Linux, the swap is performed atomically.
 
+#### `const value = await getAttr(fd, name)`
+
+Get the value of the extended file attribute `name`. If the attribute doesn't exist, `null` is returned.
+
+#### `await setAttr(fd, name, value[, encoding])`
+
+Set the value of the extended file attribute `name` to `value`.
+
+#### `await removeAttr(fd, name)`
+
+Remove the extended file attribute `name`.
+
+#### `const names = await listAttrs(fd)`
+
+List all extended file attributes.
+
 ## License
 
 Apache-2.0

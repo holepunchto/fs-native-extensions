@@ -211,7 +211,7 @@ static void
 fs_ext__set_attr_work(uv_work_t *req) {
   fs_ext_set_attr_t *r = (fs_ext_set_attr_t *) req->data;
 
-  r->result = fs_ext__set_attr(r->fd, r->name, r->value);
+  r->result = fs_ext__set_attr(r->fd, r->name, &r->value);
 }
 
 static void
@@ -225,7 +225,7 @@ int
 fs_ext_set_attr(uv_loop_t *loop, fs_ext_set_attr_t *req, uv_os_fd_t fd, const char *name, const uv_buf_t *value, fs_ext_set_attr_cb cb) {
   req->fd = fd;
   req->name = name;
-  req->value = value;
+  req->value = *value;
   req->cb = cb;
   req->req.data = (void *) req;
 

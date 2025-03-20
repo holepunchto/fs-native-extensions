@@ -108,7 +108,7 @@ struct fs_ext_set_attr_s {
 
   uv_os_fd_t fd;
   const char *name;
-  const uv_buf_t *value;
+  uv_buf_t value;
 
   fs_ext_set_attr_cb cb;
 

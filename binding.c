@@ -214,11 +214,11 @@ on_fs_ext_swap(fs_ext_swap_t *req, int status) {
 
   napi_close_handle_scope(env, scope);
 
-  napi_delete_reference(env, r->cb);
-  napi_delete_reference(env, r->ctx);
-
   free((char *) req->from);
   free((char *) req->to);
+
+  napi_delete_reference(env, r->cb);
+  napi_delete_reference(env, r->ctx);
 }
 
 static void
@@ -265,10 +265,10 @@ on_fs_ext_get_attr(fs_ext_get_attr_t *req, int status, const uv_buf_t *value) {
 
   napi_close_handle_scope(env, scope);
 
+  free((char *) req->name);
+
   napi_delete_reference(env, r->cb);
   napi_delete_reference(env, r->ctx);
-
-  free((char *) req->name);
 }
 
 static void
@@ -304,10 +304,10 @@ on_fs_ext_set_attr(fs_ext_set_attr_t *req, int status) {
 
   napi_close_handle_scope(env, scope);
 
+  free((char *) req->name);
+
   napi_delete_reference(env, r->cb);
   napi_delete_reference(env, r->ctx);
-
-  free((char *) req->name);
 }
 
 static void
@@ -343,10 +343,10 @@ on_fs_ext_remove_attr(fs_ext_remove_attr_t *req, int status) {
 
   napi_close_handle_scope(env, scope);
 
+  free((char *) req->name);
+
   napi_delete_reference(env, r->cb);
   napi_delete_reference(env, r->ctx);
-
-  free((char *) req->name);
 }
 
 static void

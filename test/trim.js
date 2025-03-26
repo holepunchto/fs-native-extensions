@@ -1,12 +1,11 @@
-import test from 'brittle'
-import { join } from 'path'
-import tmp from 'test-tmp'
-import { open, close, stat, read, write } from './helpers.mjs'
+const test = require('brittle')
+const { join } = require('path')
+const { open, close, stat, read, write } = require('./helpers')
 
-import { trim, sparse } from '../index.js'
+const { trim, sparse } = require('..')
 
 test('explicit hole', async (t) => {
-  const fd = await open(join(await tmp(t), 'test'), 'w+')
+  const fd = await open(join(await t.tmp(), 'test'), 'w+')
   t.teardown(() => close(fd))
 
   await sparse(fd)
@@ -28,7 +27,7 @@ test('explicit hole', async (t) => {
 })
 
 test('implicit hole', async (t) => {
-  const fd = await open(join(await tmp(t), 'test'), 'w+')
+  const fd = await open(join(await t.tmp(), 'test'), 'w+')
   t.teardown(() => close(fd))
 
   await sparse(fd)
@@ -47,7 +46,7 @@ test('implicit hole', async (t) => {
 })
 
 test('unaligned hole', async (t) => {
-  const fd = await open(join(await tmp(t), 'test'), 'w+')
+  const fd = await open(join(await t.tmp(), 'test'), 'w+')
   t.teardown(() => close(fd))
 
   await sparse(fd)

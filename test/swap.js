@@ -1,16 +1,15 @@
-import test from 'brittle'
-import { join } from 'path'
-import { writeFile, readFile } from 'fs/promises'
-import tmp from 'test-tmp'
-import { isWindows } from 'which-runtime'
+const test = require('brittle')
+const { join } = require('path')
+const { writeFile, readFile } = require('fs/promises')
+const { isWindows } = require('which-runtime')
 
-import { swap } from '../index.js'
+const { swap } = require('..')
 
 // TODO: Swapping is borked on Windows currently, investigate.
 
 test('swap files', { skip: isWindows }, async (t) => {
-  const a = join(await tmp(t), 'a')
-  const b = join(await tmp(t), 'b')
+  const a = join(await t.tmp(), 'a')
+  const b = join(await t.tmp(), 'b')
 
   await writeFile(a, 'a')
   await writeFile(b, 'b')
@@ -22,8 +21,8 @@ test('swap files', { skip: isWindows }, async (t) => {
 })
 
 test('swap directories', { skip: isWindows }, async (t) => {
-  const a = await tmp(t)
-  const b = await tmp(t)
+  const a = await t.tmp()
+  const b = await t.tmp()
 
   await writeFile(join(a, 'a'), 'a')
   await writeFile(join(b, 'b'), 'b')
@@ -35,8 +34,8 @@ test('swap directories', { skip: isWindows }, async (t) => {
 })
 
 test('swap file and directory', { skip: isWindows }, async (t) => {
-  const a = await tmp(t)
-  const b = join(await tmp(t), 'b')
+  const a = await t.tmp()
+  const b = join(await t.tmp(), 'b')
 
   await writeFile(join(a, 'a'), 'a')
   await writeFile(b, 'b')

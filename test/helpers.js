@@ -1,6 +1,6 @@
-import fs from 'fs'
+const fs = require('fs')
 
-export function open(file, mode) {
+exports.open = function open(file, mode) {
   return new Promise((resolve, reject) => {
     fs.open(file, mode, (err, fd) => {
       if (err) reject(err)
@@ -9,7 +9,7 @@ export function open(file, mode) {
   })
 }
 
-export function close(fd) {
+exports.close = function close(fd) {
   return new Promise((resolve, reject) => {
     fs.close(fd, (err) => {
       if (err) reject(err)
@@ -18,7 +18,7 @@ export function close(fd) {
   })
 }
 
-export function stat(fd) {
+exports.stat = function stat(fd) {
   return new Promise((resolve, reject) => {
     fs.fstat(fd, (err, stat) => {
       if (err) reject(err)
@@ -27,7 +27,7 @@ export function stat(fd) {
   })
 }
 
-export function read(fd, ...args) {
+exports.read = function read(fd, ...args) {
   return new Promise((resolve, reject) => {
     fs.read(fd, ...args, (err, result) => {
       if (err) reject(err)
@@ -36,7 +36,7 @@ export function read(fd, ...args) {
   })
 }
 
-export function write(fd, ...args) {
+exports.write = function write(fd, ...args) {
   return new Promise((resolve, reject) => {
     fs.write(fd, ...args, (err, result) => {
       if (err) reject(err)

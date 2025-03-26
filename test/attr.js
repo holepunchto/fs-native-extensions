@@ -1,12 +1,11 @@
-import test from 'brittle'
-import { join } from 'path'
-import tmp from 'test-tmp'
-import { open, close } from './helpers.mjs'
+const test = require('brittle')
+const { join } = require('path')
+const { open, close } = require('./helpers')
 
-import { getAttr, setAttr, removeAttr, listAttrs } from '../index.js'
+const { getAttr, setAttr, removeAttr, listAttrs } = require('..')
 
 test('set and get attribute', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const fd = await open(file, 'w+')
   t.teardown(() => close(fd))
@@ -17,7 +16,7 @@ test('set and get attribute', async (t) => {
 })
 
 test('get missing attribute', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const fd = await open(file, 'w+')
   t.teardown(() => close(fd))
@@ -26,7 +25,7 @@ test('get missing attribute', async (t) => {
 })
 
 test('set and remove attribute', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const fd = await open(file, 'w+')
   t.teardown(() => close(fd))
@@ -39,7 +38,7 @@ test('set and remove attribute', async (t) => {
 })
 
 test('remove missing attribute', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const fd = await open(file, 'w+')
   t.teardown(() => close(fd))
@@ -48,7 +47,7 @@ test('remove missing attribute', async (t) => {
 })
 
 test('set and list attributes', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const fd = await open(file, 'w+')
   t.teardown(() => close(fd))

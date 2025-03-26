@@ -34,8 +34,8 @@
   "addon": true,
   "scripts": {
     "test": "npm run lint && npm run test:bare && npm run test:node",
-    "test:bare": "bare test.mjs",
-    "test:node": "node test.mjs",
+    "test:bare": "bare test.js",
+    "test:node": "node test.js",
     "lint": "prettier . --check"
   },
   "repository": {

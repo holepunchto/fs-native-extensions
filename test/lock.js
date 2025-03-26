@@ -1,13 +1,12 @@
-import test from 'brittle'
-import { join } from 'path'
-import tmp from 'test-tmp'
-import { isWindows, isBare } from 'which-runtime'
-import { open, close } from './helpers.mjs'
+const test = require('brittle')
+const { join } = require('path')
+const { isWindows, isBare } = require('which-runtime')
+const { open, close } = require('./helpers')
 
-import { tryLock, tryDowngradeLock, tryUpgradeLock, unlock } from '../index.js'
+const { tryLock, tryDowngradeLock, tryUpgradeLock, unlock } = require('..')
 
 test('2 exclusive locks, same fd', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const fd = await open(file, 'w+')
   t.teardown(() => close(fd))
@@ -22,7 +21,7 @@ test('2 exclusive locks, same fd', async (t) => {
 })
 
 test('2 exclusive locks, separate fd', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => close(a))
@@ -35,7 +34,7 @@ test('2 exclusive locks, separate fd', async (t) => {
 })
 
 test('2 shared locks + 1 exclusive lock, same fd', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const fd = await open(file, 'w+')
   t.teardown(() => close(fd))
@@ -51,7 +50,7 @@ test('2 shared locks + 1 exclusive lock, same fd', async (t) => {
 })
 
 test('2 shared locks + 1 exclusive lock, separate fd', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => close(a))
@@ -82,12 +81,12 @@ test(
     const shared = t.test('grant shared locks')
     shared.plan(2)
 
-    const file = join(await tmp(t), 'test')
+    const file = join(await t.tmp(), 'test')
 
     const fd = await open(file, 'w+')
 
-    const p1 = fork('test/fixture/lock.mjs', [file, '--mode', 'r', '--shared'])
-    const p2 = fork('test/fixture/lock.mjs', [file, '--mode', 'r', '--shared'])
+    const p1 = fork('test/fixture/lock.js', [file, '--mode', 'r', '--shared'])
+    const p2 = fork('test/fixture/lock.js', [file, '--mode', 'r', '--shared'])
 
     p1.on('message', (message) => {
       shared.alike(message, { granted: true }, 'lock granted')
@@ -102,7 +101,7 @@ test(
     const deny = t.test('deny exclusive lock')
     deny.plan(1)
 
-    const p3 = fork('test/fixture/lock.mjs', [file])
+    const p3 = fork('test/fixture/lock.js', [file])
 
     p3.once('message', (message) => {
       deny.alike(message, { granted: false }, 'lock denied')
@@ -134,7 +133,7 @@ test(
 )
 
 test('lock is released on file close', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const a = await open(file, 'w+')
 
@@ -151,7 +150,7 @@ test('lock is released on file close', async (t) => {
 })
 
 test('lock is not released on unrelated file close', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => close(a))
@@ -169,7 +168,7 @@ test('lock is not released on unrelated file close', async (t) => {
 })
 
 test('downgrade exclusive lock', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => close(a))
@@ -187,7 +186,7 @@ test('downgrade exclusive lock', async (t) => {
 })
 
 test('upgrade shared lock', async (t) => {
-  const file = join(await tmp(t), 'test')
+  const file = join(await t.tmp(), 'test')
 
   const a = await open(file, 'w+')
   t.teardown(() => close(a))

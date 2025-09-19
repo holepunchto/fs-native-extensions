@@ -17,12 +17,12 @@ exports.tryLock = function tryLock(fd, offset = 0, length = 0, opts = {}) {
     length = 0
   }
 
-  if (typeof opts !== 'object') {
+  if (typeof opts !== 'object' || opts === null) {
     opts = {}
   }
 
   try {
-    binding.fs_ext_napi_try_lock(fd, offset, length, opts.shared ? 0 : 1)
+    binding.tryLock(fd, offset, length, opts.shared !== true)
   } catch (err) {
     if (err.code === 'EAGAIN') return false
     throw err
@@ -47,30 +47,28 @@ exports.waitForLock = function waitForLock(
     length = 0
   }
 
-  if (typeof opts !== 'object') {
+  if (typeof opts !== 'object' || opts === null) {
     opts = {}
   }
 
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_lock_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_wait_for_lock(
-      req,
+    req.handle = binding.waitForLock(
       fd,
       offset,
       length,
-      opts.shared ? 0 : 1,
-      ctx,
+      opts.shared !== true,
+      req,
       onwork
     )
   } catch (err) {
@@ -86,7 +84,7 @@ exports.tryDowngradeLock = function tryDowngradeLock(
   length = 0
 ) {
   try {
-    binding.fs_ext_napi_try_downgrade_lock(fd, offset, length)
+    binding.tryDowngradeLock(fd, offset, length)
   } catch (err) {
     if (err.code === 'EAGAIN') return false
     throw err
@@ -100,27 +98,19 @@ exports.waitForDowngradeLock = function downgradeLock(
   offset = 0,
   length = 0
 ) {
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_lock_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_wait_for_downgrade_lock(
-      req,
-      fd,
-      offset,
-      length,
-      ctx,
-      onwork
-    )
+    req.handle = binding.waitForDowngradeLock(fd, offset, length, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -130,7 +120,7 @@ exports.waitForDowngradeLock = function downgradeLock(
 
 exports.tryUpgradeLock = function tryUpgradeLock(fd, offset = 0, length = 0) {
   try {
-    binding.fs_ext_napi_try_upgrade_lock(fd, offset, length)
+    binding.tryUpgradeLock(fd, offset, length)
   } catch (err) {
     if (err.code === 'EAGAIN') return false
     throw err
@@ -140,27 +130,19 @@ exports.tryUpgradeLock = function tryUpgradeLock(fd, offset = 0, length = 0) {
 }
 
 exports.waitForUpgradeLock = function upgradeLock(fd, offset = 0, length = 0) {
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_lock_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_wait_for_upgrade_lock(
-      req,
-      fd,
-      offset,
-      length,
-      ctx,
-      onwork
-    )
+    req.handle = binding.waitForUpgradeLock(fd, offset, length, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -169,24 +151,23 @@ exports.waitForUpgradeLock = function upgradeLock(fd, offset = 0, length = 0) {
 }
 
 exports.unlock = function unlock(fd, offset = 0, length = 0) {
-  binding.fs_ext_napi_unlock(fd, offset, length)
+  binding.unlock(fd, offset, length)
 }
 
 exports.trim = function trim(fd, offset, length) {
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_trim_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_trim(req, fd, offset, length, ctx, onwork)
+    req.handle = binding.trim(fd, offset, length, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -198,20 +179,19 @@ exports.sparse = function sparse(fd) {
   // Short circuit on everything but Windows
   if (!isWindows) return Promise.resolve()
 
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_sparse_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_sparse(req, fd, ctx, onwork)
+    req.handle = binding.sparse(fd, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -220,20 +200,19 @@ exports.sparse = function sparse(fd) {
 }
 
 exports.swap = function swap(from, to) {
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_swap_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_swap(req, from, to, ctx, onwork)
+    req.handle = binding.swap(from, to, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -242,20 +221,19 @@ exports.swap = function swap(from, to) {
 }
 
 exports.getAttr = function getAttr(fd, name) {
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_get_attr_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_get_attr(req, fd, name, ctx, onwork)
+    req.handle = binding.getAttr(fd, name, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -268,21 +246,28 @@ exports.getAttr = function getAttr(fd, name) {
 exports.setAttr = function setAttr(fd, name, value, encoding) {
   if (typeof value === 'string') value = Buffer.from(value, encoding)
 
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_set_attr_t)
-  const ctx = {
-    req,
+  const req = {
     value,
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_set_attr(req, fd, name, value, ctx, onwork)
+    req.handle = binding.setAttr(
+      fd,
+      name,
+      value.buffer,
+      value.byteOffset,
+      value.byteLength,
+      req,
+      onwork
+    )
   } catch (err) {
     return Promise.reject(err)
   }
@@ -291,20 +276,19 @@ exports.setAttr = function setAttr(fd, name, value, encoding) {
 }
 
 exports.removeAttr = function removeAttr(fd, name) {
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_remove_attr_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_remove_attr(req, fd, name, ctx, onwork)
+    req.handle = binding.removeAttr(fd, name, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -313,20 +297,19 @@ exports.removeAttr = function removeAttr(fd, name) {
 }
 
 exports.listAttrs = function listAttrs(fd) {
-  const req = Buffer.alloc(binding.sizeof_fs_ext_napi_list_attrs_t)
-  const ctx = {
-    req,
+  const req = {
+    handle: null,
     resolve: null,
     reject: null
   }
 
   const promise = new Promise((resolve, reject) => {
-    ctx.resolve = resolve
-    ctx.reject = reject
+    req.resolve = resolve
+    req.reject = reject
   })
 
   try {
-    binding.fs_ext_napi_list_attrs(req, fd, ctx, onwork)
+    req.handle = binding.listAttrs(fd, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }

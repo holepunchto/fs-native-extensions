@@ -6,8 +6,9 @@
 #include <uv.h>
 
 #include "../include/fs-ext.h"
+
 #include "platform.h"
-#include "win/nt.h"
+#include "win32/nt.h"
 
 int
 fs_ext__try_lock(uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type) {

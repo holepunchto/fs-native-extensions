@@ -1,7 +1,8 @@
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveMacros: Consecutive
+AlignEscapedNewlines: DontAlign
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
-AlwaysBreakAfterReturnType: TopLevel
+AlwaysBreakAfterReturnType: All
 BinPackArguments: false
 BinPackParameters: false
 ContinuationIndentWidth: 2

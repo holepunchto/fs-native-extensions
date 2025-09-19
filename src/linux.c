@@ -11,6 +11,7 @@
 #include <uv.h>
 
 #include "../include/fs-ext.h"
+
 #include "platform.h"
 
 #ifndef RENAME_EXCHANGE

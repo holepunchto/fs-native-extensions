@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <uv.h>
 
 #include "../include/fs-ext.h"
@@ -166,17 +167,34 @@ static void
 fs_ext__swap_after_work(uv_work_t *req, int status) {
   fs_ext_swap_t *r = (fs_ext_swap_t *) req->data;
 
+  char *from = r->from;
+  char *to = r->to;
+
   if (r->cb) r->cb(r, r->result);
+
+  free(from);
+  free(to);
 }
 
 int
 fs_ext_swap(uv_loop_t *loop, fs_ext_swap_t *req, const char *from, const char *to, fs_ext_swap_cb cb) {
-  req->from = from;
-  req->to = to;
+  int err;
+
+  req->from = strdup(from);
+  req->to = strdup(to);
   req->cb = cb;
   req->req.data = (void *) req;
 
-  return uv_queue_work(loop, &req->req, fs_ext__swap_work, fs_ext__swap_after_work);
+  err = uv_queue_work(loop, &req->req, fs_ext__swap_work, fs_ext__swap_after_work);
+
+  if (err < 0) {
+    free(req->from);
+    free(req->to);
+
+    return err;
+  }
+
+  return 0;
 }
 
 static void
@@ -191,22 +209,34 @@ fs_ext__get_attr_after_work(uv_work_t *req, int status) {
   fs_ext_get_attr_t *r = (fs_ext_get_attr_t *) req->data;
 
   uv_buf_t value = r->value;
+  char *name = r->name;
 
   if (r->cb) r->cb(r, r->result, &value);
 
   free(value.base);
+  free(name);
 }
 
 int
 fs_ext_get_attr(uv_loop_t *loop, fs_ext_get_attr_t *req, uv_os_fd_t fd, const char *name, fs_ext_get_attr_cb cb) {
+  int err;
+
   req->fd = fd;
-  req->name = name;
+  req->name = strdup(name);
   req->value.base = NULL;
   req->value.len = 0;
   req->cb = cb;
   req->req.data = (void *) req;
 
-  return uv_queue_work(loop, &req->req, fs_ext__get_attr_work, fs_ext__get_attr_after_work);
+  err = uv_queue_work(loop, &req->req, fs_ext__get_attr_work, fs_ext__get_attr_after_work);
+
+  if (err < 0) {
+    free(req->name);
+
+    return err;
+  }
+
+  return 0;
 }
 
 static void
@@ -220,18 +250,32 @@ static void
 fs_ext__set_attr_after_work(uv_work_t *req, int status) {
   fs_ext_set_attr_t *r = (fs_ext_set_attr_t *) req->data;
 
+  char *name = r->name;
+
   if (r->cb) r->cb(r, r->result);
+
+  free(name);
 }
 
 int
 fs_ext_set_attr(uv_loop_t *loop, fs_ext_set_attr_t *req, uv_os_fd_t fd, const char *name, const uv_buf_t *value, fs_ext_set_attr_cb cb) {
+  int err;
+
   req->fd = fd;
-  req->name = name;
+  req->name = strdup(name);
   req->value = *value;
   req->cb = cb;
   req->req.data = (void *) req;
 
-  return uv_queue_work(loop, &req->req, fs_ext__set_attr_work, fs_ext__set_attr_after_work);
+  err = uv_queue_work(loop, &req->req, fs_ext__set_attr_work, fs_ext__set_attr_after_work);
+
+  if (err < 0) {
+    free(req->name);
+
+    return err;
+  }
+
+  return 0;
 }
 
 static void
@@ -245,17 +289,31 @@ static void
 fs_ext__remove_attr_after_work(uv_work_t *req, int status) {
   fs_ext_remove_attr_t *r = (fs_ext_remove_attr_t *) req->data;
 
+  char *name = r->name;
+
   if (r->cb) r->cb(r, r->result);
+
+  free(name);
 }
 
 int
 fs_ext_remove_attr(uv_loop_t *loop, fs_ext_remove_attr_t *req, uv_os_fd_t fd, const char *name, fs_ext_remove_attr_cb cb) {
+  int err;
+
   req->fd = fd;
-  req->name = name;
+  req->name = strdup(name);
   req->cb = cb;
   req->req.data = (void *) req;
 
-  return uv_queue_work(loop, &req->req, fs_ext__remove_attr_work, fs_ext__remove_attr_after_work);
+  err = uv_queue_work(loop, &req->req, fs_ext__remove_attr_work, fs_ext__remove_attr_after_work);
+
+  if (err < 0) {
+    free(req->name);
+
+    return err;
+  }
+
+  return 0;
 }
 
 static void

@@ -79,8 +79,8 @@ struct fs_ext_sparse_s {
 struct fs_ext_swap_s {
   uv_work_t req;
 
-  const char *from;
-  const char *to;
+  char *from;
+  char *to;
 
   fs_ext_swap_cb cb;
 
@@ -93,7 +93,7 @@ struct fs_ext_get_attr_s {
   uv_work_t req;
 
   uv_os_fd_t fd;
-  const char *name;
+  char *name;
   uv_buf_t value;
 
   fs_ext_get_attr_cb cb;
@@ -107,7 +107,7 @@ struct fs_ext_set_attr_s {
   uv_work_t req;
 
   uv_os_fd_t fd;
-  const char *name;
+  char *name;
   uv_buf_t value;
 
   fs_ext_set_attr_cb cb;
@@ -121,7 +121,7 @@ struct fs_ext_remove_attr_s {
   uv_work_t req;
 
   uv_os_fd_t fd;
-  const char *name;
+  char *name;
 
   fs_ext_remove_attr_cb cb;
 

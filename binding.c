@@ -658,8 +658,6 @@ fs_ext_js_wait_for_lock(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_lock_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -680,6 +678,9 @@ fs_ext_js_wait_for_lock(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[4], 1, &req->ctx);
   assert(err == 0);
@@ -757,8 +758,6 @@ fs_ext_js_wait_for_downgrade_lock(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_lock_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -778,6 +777,9 @@ fs_ext_js_wait_for_downgrade_lock(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[3], 1, &req->ctx);
   assert(err == 0);
@@ -855,8 +857,6 @@ fs_ext_js_wait_for_upgrade_lock(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_lock_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -876,6 +876,9 @@ fs_ext_js_wait_for_upgrade_lock(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[3], 1, &req->ctx);
   assert(err == 0);
@@ -953,8 +956,6 @@ fs_ext_js_trim(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_trim_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -974,6 +975,9 @@ fs_ext_js_trim(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[3], 1, &req->ctx);
   assert(err == 0);
@@ -1009,8 +1013,6 @@ fs_ext_js_sparse(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_sparse_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -1028,6 +1030,9 @@ fs_ext_js_sparse(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[1], 1, &req->ctx);
   assert(err == 0);
@@ -1067,8 +1072,6 @@ fs_ext_js_swap(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_swap_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -1087,6 +1090,9 @@ fs_ext_js_swap(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[2], 1, &req->ctx);
   assert(err == 0);
@@ -1132,8 +1138,6 @@ fs_ext_js_get_attr(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_get_attr_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -1154,6 +1158,9 @@ fs_ext_js_get_attr(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[2], 1, &req->ctx);
   assert(err == 0);
@@ -1211,8 +1218,6 @@ fs_ext_js_set_attr(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_set_attr_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -1236,6 +1241,9 @@ fs_ext_js_set_attr(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[5], 1, &req->ctx);
   assert(err == 0);
@@ -1281,8 +1289,6 @@ fs_ext_js_remove_attr(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_remove_attr_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -1303,6 +1309,9 @@ fs_ext_js_remove_attr(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[2], 1, &req->ctx);
   assert(err == 0);
@@ -1338,8 +1347,6 @@ fs_ext_js_list_attrs(js_env_t *env, js_callback_info_t *info) {
   err = js_create_arraybuffer(env, sizeof(fs_ext_js_list_attrs_t), (void **) &req, &handle);
   assert(err == 0);
 
-  req->env = env;
-
   uv_loop_t *loop;
   err = js_get_env_loop(env, &loop);
   assert(err == 0);
@@ -1357,6 +1364,9 @@ fs_ext_js_list_attrs(js_env_t *env, js_callback_info_t *info) {
 
     return NULL;
   }
+
+  req->env = env;
+  req->exiting = false;
 
   err = js_create_reference(env, argv[1], 1, &req->ctx);
   assert(err == 0);

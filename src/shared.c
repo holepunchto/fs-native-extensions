@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,29 +20,54 @@ fs_ext_try_lock(uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_
 }
 
 static void
-fs_ext__lock_work(uv_work_t *req) {
-  fs_ext_lock_t *r = (fs_ext_lock_t *) req->data;
-
-  r->result = fs_ext__wait_for_lock(r->fd, r->offset, r->length, r->type);
-}
-
-static void
-fs_ext__lock_after_work(uv_work_t *req, int status) {
-  fs_ext_lock_t *r = (fs_ext_lock_t *) req->data;
+fs_ext__lock_close(uv_handle_t *handle) {
+  fs_ext_lock_t *r = (fs_ext_lock_t *) handle->data;
 
   if (r->cb) r->cb(r, r->result);
 }
 
+static void
+fs_ext__lock_after_work(uv_async_t *signal) {
+  int err;
+
+  fs_ext_lock_t *r = (fs_ext_lock_t *) signal->data;
+
+  err = uv_thread_join(&r->thread);
+  assert(err == 0);
+
+  uv_close((uv_handle_t *) signal, fs_ext__lock_close);
+}
+
+static void
+fs_ext__lock_work(void *data) {
+  int err;
+
+  fs_ext_lock_t *r = (fs_ext_lock_t *) data;
+
+  r->result = fs_ext__wait_for_lock(r->fd, r->offset, r->length, r->type);
+
+  err = uv_async_send(&r->signal);
+  assert(err == 0);
+}
+
 int
 fs_ext_wait_for_lock(uv_loop_t *loop, fs_ext_lock_t *req, uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_type_t type, fs_ext_lock_cb cb) {
+  int err;
+
   req->fd = fd;
   req->offset = offset;
   req->length = length;
   req->type = type;
   req->cb = cb;
-  req->req.data = (void *) req;
+  req->signal.data = (void *) req;
 
-  return uv_queue_work(loop, &req->req, fs_ext__lock_work, fs_ext__lock_after_work);
+  err = uv_async_init(loop, &req->signal, fs_ext__lock_after_work);
+  assert(err == 0);
+
+  err = uv_thread_create(&req->thread, fs_ext__lock_work, (void *) req);
+  assert(err == 0);
+
+  return 0;
 }
 
 int
@@ -56,29 +82,47 @@ fs_ext_try_downgrade_lock(uv_os_fd_t fd, uint64_t offset, size_t length) {
 }
 
 static void
-fs_ext__downgrade_lock_work(uv_work_t *req) {
-  fs_ext_lock_t *r = (fs_ext_lock_t *) req->data;
+fs_ext__downgrade_lock_work(void *data) {
+  int err;
+
+  fs_ext_lock_t *r = (fs_ext_lock_t *) data;
 
   r->result = fs_ext__wait_for_downgrade_lock(r->fd, r->offset, r->length);
+
+  err = uv_async_send(&r->signal);
+  assert(err == 0);
 }
 
 int
 fs_ext_wait_for_downgrade_lock(uv_loop_t *loop, fs_ext_lock_t *req, uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_cb cb) {
+  int err;
+
   req->fd = fd;
   req->offset = offset;
   req->length = length;
   req->type = FS_EXT_RDLOCK;
   req->cb = cb;
-  req->req.data = (void *) req;
+  req->signal.data = (void *) req;
 
-  return uv_queue_work(loop, &req->req, fs_ext__downgrade_lock_work, fs_ext__lock_after_work);
+  err = uv_async_init(loop, &req->signal, fs_ext__lock_after_work);
+  assert(err == 0);
+
+  err = uv_thread_create(&req->thread, fs_ext__downgrade_lock_work, (void *) req);
+  assert(err == 0);
+
+  return 0;
 }
 
 static void
-fs_ext__upgrade_lock_work(uv_work_t *req) {
-  fs_ext_lock_t *r = (fs_ext_lock_t *) req->data;
+fs_ext__upgrade_lock_work(void *data) {
+  int err;
+
+  fs_ext_lock_t *r = (fs_ext_lock_t *) data;
 
   r->result = fs_ext__wait_for_upgrade_lock(r->fd, r->offset, r->length);
+
+  err = uv_async_send(&r->signal);
+  assert(err == 0);
 }
 
 int
@@ -94,14 +138,22 @@ fs_ext_try_upgrade_lock(uv_os_fd_t fd, uint64_t offset, size_t length) {
 
 int
 fs_ext_wait_for_upgrade_lock(uv_loop_t *loop, fs_ext_lock_t *req, uv_os_fd_t fd, uint64_t offset, size_t length, fs_ext_lock_cb cb) {
+  int err;
+
   req->fd = fd;
   req->offset = offset;
   req->length = length;
   req->type = FS_EXT_WRLOCK;
   req->cb = cb;
-  req->req.data = (void *) req;
+  req->signal.data = (void *) req;
 
-  return uv_queue_work(loop, &req->req, fs_ext__upgrade_lock_work, fs_ext__lock_after_work);
+  err = uv_async_init(loop, &req->signal, fs_ext__lock_after_work);
+  assert(err == 0);
+
+  err = uv_thread_create(&req->thread, fs_ext__upgrade_lock_work, (void *) req);
+  assert(err == 0);
+
+  return 0;
 }
 
 int

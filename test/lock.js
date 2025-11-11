@@ -3,7 +3,13 @@ const { join } = require('path')
 const { isWindows, isBare } = require('which-runtime')
 const { open, close } = require('./helpers')
 
-const { tryLock, tryDowngradeLock, tryUpgradeLock, unlock } = require('..')
+const {
+  tryLock,
+  tryDowngradeLock,
+  tryUpgradeLock,
+  waitForLock,
+  unlock
+} = require('..')
 
 test('2 exclusive locks, same fd', async (t) => {
   const file = join(await t.tmp(), 'test')
@@ -202,4 +208,20 @@ test('upgrade shared lock', async (t) => {
   t.ok(tryUpgradeLock(a), 'lock upgraded')
 
   t.absent(tryLock(b, { shared: true }), 'lock denied')
+})
+
+test('many exclusive locks waiting', async (t) => {
+  t.plan(10)
+
+  const file = join(await t.tmp(), 'test')
+
+  for (let i = 0; i < 10; i++) run(i)
+
+  async function run(i) {
+    const fd = await open(file, 'w+')
+
+    await waitForLock(fd)
+    t.pass(`lock ${i} granted`)
+    setTimeout(() => close(fd), 10)
+  }
 })

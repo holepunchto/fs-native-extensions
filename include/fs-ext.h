@@ -36,7 +36,8 @@ typedef enum {
 } fs_ext_lock_type_t;
 
 struct fs_ext_lock_s {
-  uv_work_t req;
+  uv_thread_t thread;
+  uv_async_t signal;
 
   uv_os_fd_t fd;
   uint64_t offset;

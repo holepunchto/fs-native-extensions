@@ -31,12 +31,7 @@ exports.tryLock = function tryLock(fd, offset = 0, length = 0, opts = {}) {
   return true
 }
 
-exports.waitForLock = function waitForLock(
-  fd,
-  offset = 0,
-  length = 0,
-  opts = {}
-) {
+exports.waitForLock = function waitForLock(fd, offset = 0, length = 0, opts = {}) {
   if (typeof offset === 'object') {
     opts = offset
     offset = 0
@@ -63,14 +58,7 @@ exports.waitForLock = function waitForLock(
   })
 
   try {
-    req.handle = binding.waitForLock(
-      fd,
-      offset,
-      length,
-      opts.shared !== true,
-      req,
-      onwork
-    )
+    req.handle = binding.waitForLock(fd, offset, length, opts.shared !== true, req, onwork)
   } catch (err) {
     return Promise.reject(err)
   }
@@ -78,11 +66,7 @@ exports.waitForLock = function waitForLock(
   return promise
 }
 
-exports.tryDowngradeLock = function tryDowngradeLock(
-  fd,
-  offset = 0,
-  length = 0
-) {
+exports.tryDowngradeLock = function tryDowngradeLock(fd, offset = 0, length = 0) {
   try {
     binding.tryDowngradeLock(fd, offset, length)
   } catch (err) {
@@ -93,11 +77,7 @@ exports.tryDowngradeLock = function tryDowngradeLock(
   return true
 }
 
-exports.waitForDowngradeLock = function downgradeLock(
-  fd,
-  offset = 0,
-  length = 0
-) {
+exports.waitForDowngradeLock = function downgradeLock(fd, offset = 0, length = 0) {
   const req = {
     handle: null,
     resolve: null,
@@ -238,9 +218,7 @@ exports.getAttr = function getAttr(fd, name) {
     return Promise.reject(err)
   }
 
-  return promise.then((buffer) =>
-    buffer === null ? null : Buffer.from(buffer)
-  )
+  return promise.then((buffer) => (buffer === null ? null : Buffer.from(buffer)))
 }
 
 exports.setAttr = function setAttr(fd, name, value, encoding) {

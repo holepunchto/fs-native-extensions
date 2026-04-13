@@ -2,7 +2,7 @@ const test = require('brittle')
 const { join } = require('path')
 const { open, close, stat, read, write } = require('./helpers')
 
-const { trim, sparse } = require('..')
+const { trim, trimSync, sparse, sparseSync } = require('..')
 
 test('explicit hole', async (t) => {
   const fd = await open(join(await t.tmp(), 'test'), 'w+')
@@ -59,8 +59,48 @@ test('unaligned hole', async (t) => {
   await testTrim(t, fd, blksize / 2, empty.byteLength)
 })
 
+test('explicit hole, sync', async (t) => {
+  const fd = await open(join(await t.tmp(), 'test'), 'w+')
+  t.teardown(() => close(fd))
+
+  sparseSync(fd)
+
+  const { blksize } = await stat(fd)
+
+  const empty = Buffer.alloc(blksize * 1000)
+  await write(fd, empty)
+
+  const expected = Buffer.from('hello world')
+  await write(fd, expected)
+
+  await testTrimSync(t, fd, 0, empty.byteLength)
+
+  const actual = Buffer.alloc(expected.byteLength)
+  await read(fd, actual, 0, expected.byteLength, empty.byteLength)
+
+  t.alike(actual, expected, 'file is intact')
+})
+
+test('unaligned hole, sync', async (t) => {
+  const fd = await open(join(await t.tmp(), 'test'), 'w+')
+  t.teardown(() => close(fd))
+
+  sparseSync(fd)
+
+  const { blksize } = await stat(fd)
+
+  const empty = Buffer.alloc(blksize * 1000)
+  await write(fd, empty)
+
+  await testTrimSync(t, fd, blksize / 2, empty.byteLength)
+})
+
 async function testTrim(t, fd, offset, length) {
   await testReducesBlocks(t, fd, () => trim(fd, offset, length))
+}
+
+async function testTrimSync(t, fd, offset, length) {
+  await testReducesBlocks(t, fd, () => trimSync(fd, offset, length))
 }
 
 async function testReducesBlocks(t, fd, fn) {

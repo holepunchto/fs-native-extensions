@@ -7,6 +7,8 @@
 
 #include "include/fs-ext.h"
 
+#include "src/platform.h"
+
 typedef utf8_t fs_ext_js_path_t[4096 + 1 /* NULL */];
 
 typedef struct {
@@ -695,6 +697,49 @@ fs_ext_js_wait_for_lock(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+fs_ext_js_wait_for_lock_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 4;
+  js_value_t *argv[4];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 4);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  int64_t offset;
+  err = js_get_value_int64(env, argv[1], &offset);
+  assert(err == 0);
+
+  int64_t len;
+  err = js_get_value_int64(env, argv[2], &len);
+  assert(err == 0);
+
+  bool exclusive;
+  err = js_get_value_bool(env, argv[3], &exclusive);
+  assert(err == 0);
+
+  err = fs_ext__wait_for_lock(
+    uv_get_osfhandle(fd),
+    offset,
+    len,
+    exclusive ? FS_EXT_WRLOCK : FS_EXT_RDLOCK
+  );
+
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 fs_ext_js_try_downgrade_lock(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -791,6 +836,40 @@ fs_ext_js_wait_for_downgrade_lock(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   return handle;
+}
+
+static js_value_t *
+fs_ext_js_wait_for_downgrade_lock_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 3);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  int64_t offset;
+  err = js_get_value_int64(env, argv[1], &offset);
+  assert(err == 0);
+
+  int64_t len;
+  err = js_get_value_int64(env, argv[2], &len);
+  assert(err == 0);
+
+  err = fs_ext__wait_for_downgrade_lock(uv_get_osfhandle(fd), offset, len);
+
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+  }
+
+  return NULL;
 }
 
 static js_value_t *
@@ -893,6 +972,40 @@ fs_ext_js_wait_for_upgrade_lock(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+fs_ext_js_wait_for_upgrade_lock_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 3);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  int64_t offset;
+  err = js_get_value_int64(env, argv[1], &offset);
+  assert(err == 0);
+
+  int64_t len;
+  err = js_get_value_int64(env, argv[2], &len);
+  assert(err == 0);
+
+  err = fs_ext__wait_for_upgrade_lock(uv_get_osfhandle(fd), offset, len);
+
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 fs_ext_js_unlock(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -992,6 +1105,40 @@ fs_ext_js_trim(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+fs_ext_js_trim_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 3);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  int64_t offset;
+  err = js_get_value_int64(env, argv[1], &offset);
+  assert(err == 0);
+
+  int64_t len;
+  err = js_get_value_int64(env, argv[2], &len);
+  assert(err == 0);
+
+  err = fs_ext__trim(uv_get_osfhandle(fd), offset, len);
+
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 fs_ext_js_sparse(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -1044,6 +1191,32 @@ fs_ext_js_sparse(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   return handle;
+}
+
+static js_value_t *
+fs_ext_js_sparse_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  err = fs_ext__sparse(uv_get_osfhandle(fd));
+
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+  }
+
+  return NULL;
 }
 
 static js_value_t *
@@ -1104,6 +1277,36 @@ fs_ext_js_swap(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   return handle;
+}
+
+static js_value_t *
+fs_ext_js_swap_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  fs_ext_js_path_t from;
+  err = js_get_value_string_utf8(env, argv[0], from, sizeof(from), NULL);
+  assert(err == 0);
+
+  fs_ext_js_path_t to;
+  err = js_get_value_string_utf8(env, argv[1], to, sizeof(to), NULL);
+  assert(err == 0);
+
+  err = fs_ext__swap((const char *) from, (const char *) to);
+
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+  }
+
+  return NULL;
 }
 
 static js_value_t *
@@ -1172,6 +1375,63 @@ fs_ext_js_get_attr(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   return handle;
+}
+
+static js_value_t *
+fs_ext_js_get_attr_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  size_t name_len;
+  err = js_get_value_string_utf8(env, argv[1], NULL, 0, &name_len);
+  assert(err == 0);
+
+  name_len += 1 /* NULL */;
+
+  utf8_t *name = malloc(name_len);
+  err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
+  assert(err == 0);
+
+  uv_buf_t value = uv_buf_init(NULL, 0);
+
+  int result = fs_ext__get_attr(uv_get_osfhandle(fd), (const char *) name, &value);
+
+  free(name);
+
+  if (result < 0 && result != UV_ENODATA) {
+    err = js_throw_error(env, uv_err_name(result), uv_strerror(result));
+    assert(err == 0);
+
+    return NULL;
+  }
+
+  js_value_t *ret;
+
+  if (result == UV_ENODATA) {
+    err = js_get_null(env, &ret);
+    assert(err == 0);
+  } else {
+    void *data;
+    err = js_create_arraybuffer(env, value.len, &data, &ret);
+    assert(err == 0);
+
+    memcpy(data, value.base, value.len);
+
+    free(value.base);
+  }
+
+  return ret;
 }
 
 static js_value_t *
@@ -1258,6 +1518,58 @@ fs_ext_js_set_attr(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+fs_ext_js_set_attr_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 5;
+  js_value_t *argv[5];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 5);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  size_t name_len;
+  err = js_get_value_string_utf8(env, argv[1], NULL, 0, &name_len);
+  assert(err == 0);
+
+  name_len += 1 /* NULL */;
+
+  utf8_t *name = malloc(name_len);
+  err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
+  assert(err == 0);
+
+  char *data;
+  err = js_get_arraybuffer_info(env, argv[2], (void **) &data, NULL);
+  assert(err == 0);
+
+  int64_t data_offset;
+  err = js_get_value_int64(env, argv[3], &data_offset);
+  assert(err == 0);
+
+  int64_t data_len;
+  err = js_get_value_int64(env, argv[4], &data_len);
+  assert(err == 0);
+
+  uv_buf_t buf = uv_buf_init(&data[data_offset], data_len);
+
+  int result = fs_ext__set_attr(uv_get_osfhandle(fd), (const char *) name, &buf);
+
+  free(name);
+
+  if (result < 0) {
+    err = js_throw_error(env, uv_err_name(result), uv_strerror(result));
+    assert(err == 0);
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 fs_ext_js_remove_attr(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -1326,6 +1638,44 @@ fs_ext_js_remove_attr(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+fs_ext_js_remove_attr_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  size_t name_len;
+  err = js_get_value_string_utf8(env, argv[1], NULL, 0, &name_len);
+  assert(err == 0);
+
+  name_len += 1 /* NULL */;
+
+  utf8_t *name = malloc(name_len);
+  err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
+  assert(err == 0);
+
+  int result = fs_ext__remove_attr(uv_get_osfhandle(fd), (const char *) name);
+
+  free(name);
+
+  if (result < 0 && result != UV_ENODATA) {
+    err = js_throw_error(env, uv_err_name(result), uv_strerror(result));
+    assert(err == 0);
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 fs_ext_js_list_attrs(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -1381,6 +1731,54 @@ fs_ext_js_list_attrs(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+fs_ext_js_list_attrs_sync(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  int64_t fd;
+  err = js_get_value_int64(env, argv[0], &fd);
+  assert(err == 0);
+
+  char *names = NULL;
+  size_t length = 0;
+
+  int result = fs_ext__list_attrs(uv_get_osfhandle(fd), &names, &length);
+
+  if (result < 0) {
+    err = js_throw_error(env, uv_err_name(result), uv_strerror(result));
+    assert(err == 0);
+
+    return NULL;
+  }
+
+  const char **list = (const char **) names;
+
+  js_value_t *ret;
+  err = js_create_array_with_length(env, length, &ret);
+  assert(err == 0);
+
+  for (size_t i = 0; i < length; i++) {
+    js_value_t *value;
+    err = js_create_string_utf8(env, (const utf8_t *) list[i], -1, &value);
+    assert(err == 0);
+
+    err = js_set_element(env, ret, i, value);
+    assert(err == 0);
+  }
+
+  free(names);
+
+  return ret;
+}
+
+static js_value_t *
 fs_ext_js_exports(js_env_t *env, js_value_t *exports) {
   int err;
 
@@ -1395,18 +1793,28 @@ fs_ext_js_exports(js_env_t *env, js_value_t *exports) {
 
   V("tryLock", fs_ext_js_try_lock)
   V("waitForLock", fs_ext_js_wait_for_lock)
+  V("waitForLockSync", fs_ext_js_wait_for_lock_sync)
   V("tryDowngradeLock", fs_ext_js_try_downgrade_lock)
   V("waitForDowngradeLock", fs_ext_js_wait_for_downgrade_lock)
+  V("waitForDowngradeLockSync", fs_ext_js_wait_for_downgrade_lock_sync)
   V("tryUpgradeLock", fs_ext_js_try_upgrade_lock)
   V("waitForUpgradeLock", fs_ext_js_wait_for_upgrade_lock)
+  V("waitForUpgradeLockSync", fs_ext_js_wait_for_upgrade_lock_sync)
   V("unlock", fs_ext_js_unlock)
   V("trim", fs_ext_js_trim)
+  V("trimSync", fs_ext_js_trim_sync)
   V("sparse", fs_ext_js_sparse)
+  V("sparseSync", fs_ext_js_sparse_sync)
   V("swap", fs_ext_js_swap)
+  V("swapSync", fs_ext_js_swap_sync)
   V("getAttr", fs_ext_js_get_attr)
+  V("getAttrSync", fs_ext_js_get_attr_sync)
   V("setAttr", fs_ext_js_set_attr)
+  V("setAttrSync", fs_ext_js_set_attr_sync)
   V("removeAttr", fs_ext_js_remove_attr)
+  V("removeAttrSync", fs_ext_js_remove_attr_sync)
   V("listAttrs", fs_ext_js_list_attrs)
+  V("listAttrsSync", fs_ext_js_list_attrs_sync)
 #undef V
 
   return exports;

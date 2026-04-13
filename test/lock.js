@@ -3,7 +3,16 @@ const { join } = require('path')
 const { isWindows, isBare } = require('which-runtime')
 const { open, close } = require('./helpers')
 
-const { tryLock, tryDowngradeLock, tryUpgradeLock, waitForLock, unlock } = require('..')
+const {
+  tryLock,
+  tryDowngradeLock,
+  tryUpgradeLock,
+  waitForLock,
+  waitForLockSync,
+  waitForDowngradeLockSync,
+  waitForUpgradeLockSync,
+  unlock
+} = require('..')
 
 test('2 exclusive locks, same fd', async (t) => {
   const file = join(await t.tmp(), 'test')
@@ -214,4 +223,70 @@ test('many exclusive locks waiting', async (t) => {
     t.pass(`lock ${i} granted`)
     setTimeout(() => close(fd), 10)
   }
+})
+
+test('waitForLockSync, exclusive', async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  waitForLockSync(fd)
+  t.pass('lock granted')
+
+  unlock(fd)
+})
+
+test('waitForLockSync, shared', async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const a = await open(file, 'w+')
+  t.teardown(() => close(a))
+
+  const b = await open(file, 'w+')
+  t.teardown(() => close(b))
+
+  waitForLockSync(a, { shared: true })
+  waitForLockSync(b, { shared: true })
+
+  t.pass('both shared locks granted')
+})
+
+test('waitForDowngradeLockSync', async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const a = await open(file, 'w+')
+  t.teardown(() => close(a))
+
+  const b = await open(file, 'w+')
+  t.teardown(() => close(b))
+
+  t.ok(tryLock(a), 'lock granted')
+
+  t.absent(tryLock(b, { shared: true }), 'lock denied')
+
+  waitForDowngradeLockSync(a)
+  t.pass('lock downgraded')
+
+  t.ok(tryLock(b, { shared: true }), 'lock granted')
+})
+
+test('waitForUpgradeLockSync', async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const a = await open(file, 'w+')
+  t.teardown(() => close(a))
+
+  const b = await open(file, 'w+')
+  t.teardown(() => close(b))
+
+  t.ok(tryLock(a, { shared: true }), 'lock granted')
+
+  t.ok(tryLock(b, { shared: true }), 'lock granted')
+  unlock(b)
+
+  waitForUpgradeLockSync(a)
+  t.pass('lock upgraded')
+
+  t.absent(tryLock(b, { shared: true }), 'lock denied')
 })

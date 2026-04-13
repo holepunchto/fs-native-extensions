@@ -55,6 +55,12 @@ Request a lock on a file, resolving when the lock is granted. If another file de
 
 Options are the same as `tryLock()`.
 
+#### `waitForLockSync(fd[, offset[, length]][, options])`
+
+Synchronous version of `waitForLock()`. Blocks the calling thread until the lock is granted.
+
+Options are the same as `tryLock()`.
+
 #### `const granted = tryDowngradeLock(fd[, offset[, length]])`
 
 Request a downgrade from an already held exclusive lock to a shared lock, returning `true` if the lock was granted or `false` if another process currently holds the lock. If `false` is returned, the exclusive lock is lost and must be requested again.
@@ -67,6 +73,10 @@ Request a downgrade from an already held exclusive lock to a shared lock.
 
 On Windows, the downgrade will happen atomically and be immediately granted.
 
+#### `waitForDowngradeLockSync(fd[, offset[, length]])`
+
+Synchronous version of `waitForDowngradeLock()`. Blocks the calling thread until the downgrade is granted.
+
 #### `const granted = tryUpgradeLock(fd[, offset[, length]])`
 
 Request an upgrade from an already held shared lock to an exclusive lock, returning `true` if the lock was granted or `false` if another process currently holds the lock. If `false` is returned, the shared lock is lost and must be requested again.
@@ -74,6 +84,10 @@ Request an upgrade from an already held shared lock to an exclusive lock, return
 #### `await waitForUpgradeLock(fd[, offset[, length]])`
 
 Request an upgrade from an already held shared lock to an exclusive lock.
+
+#### `waitForUpgradeLockSync(fd[, offset[, length]])`
+
+Synchronous version of `waitForUpgradeLock()`. Blocks the calling thread until the upgrade is granted.
 
 #### `unlock(fd[, offset[, length]])`
 
@@ -85,9 +99,17 @@ Create a hole in a file at `offset` for `length` bytes. On file systems that sup
 
 On Windows, the file must first be marked sparse using `sparse(fd)`. Otherwise, zeros will be explicitly written to the hole.
 
+#### `trimSync(fd, offset, length)`
+
+Synchronous version of `trim()`.
+
 #### `await sparse(fd)`
 
 Mark a file as sparse. On Windows, this operation is required before holes can be created in the file. On other systems, this operation has no effect.
+
+#### `sparseSync(fd)`
+
+Synchronous version of `sparse()`.
 
 #### `await swap(from, to)`
 
@@ -97,21 +119,41 @@ On Windows, the swap is performed by first moving `to` to a temporary path, then
 
 On macOS and Linux, the swap is performed atomically.
 
+#### `swapSync(from, to)`
+
+Synchronous version of `swap()`.
+
 #### `const value = await getAttr(fd, name)`
 
 Get the value of the extended file attribute `name`. If the attribute doesn't exist, `null` is returned.
+
+#### `const value = getAttrSync(fd, name)`
+
+Synchronous version of `getAttr()`.
 
 #### `await setAttr(fd, name, value[, encoding])`
 
 Set the value of the extended file attribute `name` to `value`.
 
+#### `setAttrSync(fd, name, value[, encoding])`
+
+Synchronous version of `setAttr()`.
+
 #### `await removeAttr(fd, name)`
 
 Remove the extended file attribute `name`.
 
+#### `removeAttrSync(fd, name)`
+
+Synchronous version of `removeAttr()`.
+
 #### `const names = await listAttrs(fd)`
 
 List all extended file attributes.
+
+#### `const names = listAttrsSync(fd)`
+
+Synchronous version of `listAttrs()`.
 
 ## License
 

@@ -66,6 +66,24 @@ exports.waitForLock = function waitForLock(fd, offset = 0, length = 0, opts = {}
   return promise
 }
 
+exports.waitForLockSync = function waitForLockSync(fd, offset = 0, length = 0, opts = {}) {
+  if (typeof offset === 'object') {
+    opts = offset
+    offset = 0
+  }
+
+  if (typeof length === 'object') {
+    opts = length
+    length = 0
+  }
+
+  if (typeof opts !== 'object' || opts === null) {
+    opts = {}
+  }
+
+  binding.waitForLockSync(fd, offset, length, opts.shared !== true)
+}
+
 exports.tryDowngradeLock = function tryDowngradeLock(fd, offset = 0, length = 0) {
   try {
     binding.tryDowngradeLock(fd, offset, length)
@@ -96,6 +114,10 @@ exports.waitForDowngradeLock = function downgradeLock(fd, offset = 0, length = 0
   }
 
   return promise
+}
+
+exports.waitForDowngradeLockSync = function waitForDowngradeLockSync(fd, offset = 0, length = 0) {
+  binding.waitForDowngradeLockSync(fd, offset, length)
 }
 
 exports.tryUpgradeLock = function tryUpgradeLock(fd, offset = 0, length = 0) {
@@ -130,6 +152,10 @@ exports.waitForUpgradeLock = function upgradeLock(fd, offset = 0, length = 0) {
   return promise
 }
 
+exports.waitForUpgradeLockSync = function waitForUpgradeLockSync(fd, offset = 0, length = 0) {
+  binding.waitForUpgradeLockSync(fd, offset, length)
+}
+
 exports.unlock = function unlock(fd, offset = 0, length = 0) {
   binding.unlock(fd, offset, length)
 }
@@ -153,6 +179,10 @@ exports.trim = function trim(fd, offset, length) {
   }
 
   return promise
+}
+
+exports.trimSync = function trimSync(fd, offset, length) {
+  binding.trimSync(fd, offset, length)
 }
 
 exports.sparse = function sparse(fd) {
@@ -179,6 +209,13 @@ exports.sparse = function sparse(fd) {
   return promise
 }
 
+exports.sparseSync = function sparseSync(fd) {
+  // Short circuit on everything but Windows
+  if (!isWindows) return
+
+  binding.sparseSync(fd)
+}
+
 exports.swap = function swap(from, to) {
   const req = {
     handle: null,
@@ -200,6 +237,10 @@ exports.swap = function swap(from, to) {
   return promise
 }
 
+exports.swapSync = function swapSync(from, to) {
+  binding.swapSync(from, to)
+}
+
 exports.getAttr = function getAttr(fd, name) {
   const req = {
     handle: null,
@@ -219,6 +260,11 @@ exports.getAttr = function getAttr(fd, name) {
   }
 
   return promise.then((buffer) => (buffer === null ? null : Buffer.from(buffer)))
+}
+
+exports.getAttrSync = function getAttrSync(fd, name) {
+  const buffer = binding.getAttrSync(fd, name)
+  return buffer === null ? null : Buffer.from(buffer)
 }
 
 exports.setAttr = function setAttr(fd, name, value, encoding) {
@@ -253,6 +299,12 @@ exports.setAttr = function setAttr(fd, name, value, encoding) {
   return promise
 }
 
+exports.setAttrSync = function setAttrSync(fd, name, value, encoding) {
+  if (typeof value === 'string') value = Buffer.from(value, encoding)
+
+  binding.setAttrSync(fd, name, value.buffer, value.byteOffset, value.byteLength)
+}
+
 exports.removeAttr = function removeAttr(fd, name) {
   const req = {
     handle: null,
@@ -274,6 +326,10 @@ exports.removeAttr = function removeAttr(fd, name) {
   return promise
 }
 
+exports.removeAttrSync = function removeAttrSync(fd, name) {
+  binding.removeAttrSync(fd, name)
+}
+
 exports.listAttrs = function listAttrs(fd) {
   const req = {
     handle: null,
@@ -293,4 +349,8 @@ exports.listAttrs = function listAttrs(fd) {
   }
 
   return promise
+}
+
+exports.listAttrsSync = function listAttrsSync(fd) {
+  return binding.listAttrsSync(fd)
 }

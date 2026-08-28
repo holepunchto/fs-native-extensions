@@ -1,13 +1,10 @@
 const test = require('brittle')
 const { join } = require('path')
 const { writeFile, readFile } = require('fs/promises')
-const { isWindows } = require('which-runtime')
 
 const { swap, swapSync } = require('..')
 
-// TODO: Swapping is borked on Windows currently, investigate.
-
-test('swap files', { skip: isWindows }, async (t) => {
+test('swap files', async (t) => {
   const a = join(await t.tmp(), 'a')
   const b = join(await t.tmp(), 'b')
 
@@ -20,7 +17,7 @@ test('swap files', { skip: isWindows }, async (t) => {
   t.is(await readFile(b, 'utf8'), 'a')
 })
 
-test('swap directories', { skip: isWindows }, async (t) => {
+test('swap directories', async (t) => {
   const a = await t.tmp()
   const b = await t.tmp()
 
@@ -33,7 +30,7 @@ test('swap directories', { skip: isWindows }, async (t) => {
   t.is(await readFile(join(b, 'a'), 'utf8'), 'a')
 })
 
-test('swap file and directory', { skip: isWindows }, async (t) => {
+test('swap file and directory', async (t) => {
   const a = await t.tmp()
   const b = join(await t.tmp(), 'b')
 
@@ -46,7 +43,7 @@ test('swap file and directory', { skip: isWindows }, async (t) => {
   t.is(await readFile(join(b, 'a'), 'utf8'), 'a')
 })
 
-test('swap files, sync', { skip: isWindows }, async (t) => {
+test('swap files, sync', async (t) => {
   const a = join(await t.tmp(), 'a')
   const b = join(await t.tmp(), 'b')
 
@@ -59,7 +56,7 @@ test('swap files, sync', { skip: isWindows }, async (t) => {
   t.is(await readFile(b, 'utf8'), 'a')
 })
 
-test('swap directories, sync', { skip: isWindows }, async (t) => {
+test('swap directories, sync', async (t) => {
   const a = await t.tmp()
   const b = await t.tmp()
 

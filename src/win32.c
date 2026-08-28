@@ -161,16 +161,41 @@ fs_ext__sparse(uv_os_fd_t fd) {
 }
 
 static int
-fs_ext__temp_path(char *path) {
-  TCHAR temp_path[MAX_PATH];
+fs_ext__temp_path(const char *base, char *path) {
+  TCHAR directory[MAX_PATH];
 
-  DWORD bytes = GetTempPath(MAX_PATH, temp_path);
+  HRESULT res = StringCchCopy(directory, MAX_PATH, base);
 
-  if (bytes == 0) return uv_translate_sys_error(GetLastError());
+  if (FAILED(res)) return UV_ENAMETOOLONG;
 
-  bytes = GetTempFileName(temp_path, NULL, 0, path);
+  char *backward = strrchr(directory, '\\');
+  char *forward = strrchr(directory, '/');
+  char *separator = backward > forward ? backward : forward;
 
-  return bytes > 0 ? 0 : uv_translate_sys_error(GetLastError());
+  if (separator == NULL) {
+    res = StringCchCopy(directory, MAX_PATH, ".");
+
+    if (FAILED(res)) return UV_ENAMETOOLONG;
+  } else {
+    if (separator == directory) separator++;
+
+    *separator = '\0';
+  }
+
+  UINT unique = GetCurrentProcessId();
+
+  // A nonzero unique value makes `GetTempFileName()` return a path without
+  // creating a file at it, which is required as the path may name a directory.
+  // In return, the path is not guaranteed to be unique and must be checked.
+  for (int i = 0; i < 64; i++) {
+    if (GetTempFileName(directory, "fse", unique + i, path) == 0) {
+      return uv_translate_sys_error(GetLastError());
+    }
+
+    if (GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES) return 0;
+  }
+
+  return UV_EEXIST;
 }
 
 static int
@@ -188,16 +213,30 @@ int
 fs_ext__swap(const char *from, const char *to) {
   TCHAR swap[MAX_PATH];
 
-  int err = fs_ext__temp_path(swap);
+  int err = fs_ext__temp_path(from, swap);
+  if (err < 0) return err;
+
+  err = fs_ext__move(from, swap);
   if (err < 0) return err;
 
   err = fs_ext__move(to, from);
-  if (err < 0) return err;
 
-  err = fs_ext__move(from, to);
-  if (err < 0) return err;
+  if (err < 0) {
+    fs_ext__move(swap, from);
 
-  return fs_ext__move(swap, from);
+    return err;
+  }
+
+  err = fs_ext__move(swap, to);
+
+  if (err < 0) {
+    fs_ext__move(from, to);
+    fs_ext__move(swap, from);
+
+    return err;
+  }
+
+  return 0;
 }
 
 int

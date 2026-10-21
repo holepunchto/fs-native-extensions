@@ -25,6 +25,8 @@
 #define FILE_EXISTS         0x00000004
 #define FILE_DOES_NOT_EXIST 0x00000005
 
+#define FILE_SYNCHRONOUS_IO_NONALERT 0x00000020
+
 typedef struct _UNICODE_STRING {
   USHORT Length;
   USHORT MaximumLength;

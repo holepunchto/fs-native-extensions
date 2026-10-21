@@ -239,23 +239,35 @@ fs_ext__swap(const char *from, const char *to) {
   return 0;
 }
 
+static int
+fs_ext__stream_name(const char *name, WCHAR unicode_name[MAX_PATH], UNICODE_STRING *object_name) {
+  unicode_name[0] = L':';
+
+  int len = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, name, -1, &unicode_name[1], MAX_PATH - 1);
+
+  if (len == 0) {
+    return GetLastError() == ERROR_INSUFFICIENT_BUFFER ? UV_ENAMETOOLONG : UV_EINVAL;
+  }
+
+  *object_name = (UNICODE_STRING) {
+    .Length = len * sizeof(WCHAR),
+    .MaximumLength = (len + 1) * sizeof(WCHAR),
+    .Buffer = unicode_name,
+  };
+
+  return 0;
+}
+
 int
 fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
   HANDLE handle = fd;
   HANDLE stream_handle;
 
-  size_t len = strlen(name);
+  WCHAR unicode_name[MAX_PATH];
+  UNICODE_STRING object_name;
 
-  WCHAR unicode_name[MAX_PATH] = L":";
-  MultiByteToWideChar(CP_OEMCP, 0, name, -1, &unicode_name[1], len + 1);
-
-  len = wcslen(unicode_name) * 2;
-
-  UNICODE_STRING object_name = {
-    .Length = len,
-    .MaximumLength = len + 2,
-    .Buffer = unicode_name,
-  };
+  int err = fs_ext__stream_name(name, unicode_name, &object_name);
+  if (err < 0) return err;
 
   OBJECT_ATTRIBUTES object_attributes = {
     .Length = sizeof(object_attributes),
@@ -267,11 +279,11 @@ fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
 
   NTSTATUS res = NtOpenFile(
     &stream_handle,
-    GENERIC_READ,
+    GENERIC_READ | SYNCHRONIZE,
     &object_attributes,
     &status,
-    FILE_SHARE_READ,
-    0
+    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    FILE_SYNCHRONOUS_IO_NONALERT
   );
 
   if (res < 0) {
@@ -318,7 +330,7 @@ fs_ext__get_attr(uv_os_fd_t fd, const char *name, uv_buf_t *value) {
 
   NtClose(stream_handle);
 
-  if (res < 0) return UV_EIO;
+  if (res < 0 || status.Information != length) return UV_EIO;
 
   return 0;
 }
@@ -328,18 +340,11 @@ fs_ext__set_attr(uv_os_fd_t fd, const char *name, const uv_buf_t *value) {
   HANDLE handle = fd;
   HANDLE stream_handle;
 
-  size_t len = strlen(name);
+  WCHAR unicode_name[MAX_PATH];
+  UNICODE_STRING object_name;
 
-  WCHAR unicode_name[MAX_PATH] = L":";
-  MultiByteToWideChar(CP_OEMCP, 0, name, -1, &unicode_name[1], len + 1);
-
-  len = wcslen(unicode_name) * 2;
-
-  UNICODE_STRING object_name = {
-    .Length = len,
-    .MaximumLength = len + 2,
-    .Buffer = unicode_name,
-  };
+  int err = fs_ext__stream_name(name, unicode_name, &object_name);
+  if (err < 0) return err;
 
   OBJECT_ATTRIBUTES object_attributes = {
     .Length = sizeof(object_attributes),
@@ -351,14 +356,14 @@ fs_ext__set_attr(uv_os_fd_t fd, const char *name, const uv_buf_t *value) {
 
   NTSTATUS res = NtCreateFile(
     &stream_handle,
-    GENERIC_WRITE,
+    GENERIC_WRITE | SYNCHRONIZE,
     &object_attributes,
     &status,
     NULL,
     FILE_ATTRIBUTE_NORMAL,
     0,
     FILE_OVERWRITE_IF,
-    0,
+    FILE_SYNCHRONOUS_IO_NONALERT,
     NULL,
     0
   );
@@ -383,7 +388,7 @@ fs_ext__set_attr(uv_os_fd_t fd, const char *name, const uv_buf_t *value) {
 
   NtClose(stream_handle);
 
-  if (res < 0) return UV_EIO;
+  if (res < 0 || status.Information != value->len) return UV_EIO;
 
   return 0;
 }
@@ -393,18 +398,11 @@ fs_ext__remove_attr(uv_os_fd_t fd, const char *name) {
   HANDLE handle = fd;
   HANDLE stream_handle;
 
-  size_t len = strlen(name);
+  WCHAR unicode_name[MAX_PATH];
+  UNICODE_STRING object_name;
 
-  WCHAR unicode_name[MAX_PATH] = L":";
-  MultiByteToWideChar(CP_OEMCP, 0, name, -1, &unicode_name[1], len + 1);
-
-  len = wcslen(unicode_name) * 2;
-
-  UNICODE_STRING object_name = {
-    .Length = len,
-    .MaximumLength = len + 2,
-    .Buffer = unicode_name,
-  };
+  int err = fs_ext__stream_name(name, unicode_name, &object_name);
+  if (err < 0) return err;
 
   OBJECT_ATTRIBUTES object_attributes = {
     .Length = sizeof(object_attributes),
@@ -468,7 +466,11 @@ fs_ext__list_attrs(uv_os_fd_t fd, char **names, size_t *length) {
     }
   } while (true);
 
-  if (res < 0) return UV_EIO;
+  if (res < 0) {
+    free(info);
+
+    return UV_EIO;
+  }
 
   PFILE_STREAM_INFORMATION next = info;
 

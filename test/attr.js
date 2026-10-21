@@ -1,5 +1,6 @@
 const test = require('brittle')
 const { join } = require('path')
+const { isWindows } = require('which-runtime')
 const { open, close } = require('./helpers')
 
 const {
@@ -72,6 +73,46 @@ test('set and list attributes', async (t) => {
     attrs.filter((a) => a.startsWith('user.')),
     ['user.a', 'user.b', 'user.c', 'user.d']
   )
+})
+
+test('set and list attribute with non-ascii name', async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  await setAttr(fd, 'user.\u00e6\u00f8\u00e5', 'hello world')
+
+  const attrs = await listAttrs(fd)
+
+  t.alike(
+    attrs.filter((a) => a.startsWith('user.')),
+    ['user.\u00e6\u00f8\u00e5']
+  )
+  t.alike(await getAttr(fd, 'user.\u00e6\u00f8\u00e5'), Buffer.from('hello world'))
+})
+
+test('set attribute with long name', async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  await t.exception(setAttr(fd, 'user.' + 'a'.repeat(1000), 'hello world'))
+})
+
+test('get attribute while stream is open for writing', { skip: !isWindows }, async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  await setAttr(fd, 'user.hello', 'hello world')
+
+  const stream = await open(file + ':user.hello', 'r+')
+  t.teardown(() => close(stream))
+
+  t.alike(await getAttr(fd, 'user.hello'), Buffer.from('hello world'))
 })
 
 test('set and get attribute, sync', async (t) => {

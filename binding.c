@@ -1410,6 +1410,8 @@ fs_ext_js_get_attr_sync(js_env_t *env, js_callback_info_t *info) {
   free(name);
 
   if (result < 0 && result != UV_ENODATA) {
+    free(value.base);
+
     err = js_throw_error(env, uv_err_name(result), uv_strerror(result));
     assert(err == 0);
 

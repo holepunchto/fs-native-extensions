@@ -42,6 +42,13 @@ if(LINUX OR ANDROID)
     PRIVATE
       src/linux.c
   )
+
+  target_compile_definitions(
+    fs_native_extensions
+    PRIVATE
+      _GNU_SOURCE
+      _FILE_OFFSET_BITS=64
+  )
 endif()
 
 if(WIN32)

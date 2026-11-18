@@ -66,7 +66,7 @@ else()
   )
 endif()
 
-add_bare_module(fs_native_extensions_bare)
+add_bare_module(fs_native_extensions_bare INSTALL PRIVACY_MANIFEST PrivacyInfo.xcprivacy)
 
 target_sources(
   ${fs_native_extensions_bare}

@@ -59,7 +59,7 @@
     "bare-path": "^3.0.0",
     "bare-subprocess": "^4.0.5",
     "brittle": "^3.1.1",
-    "cmake-bare": "^1.1.10",
+    "cmake-bare": "^1.15.0",
     "cmake-fetch": "^1.4.7",
     "cmake-napi": "^1.0.5",
     "cmake-npm": "^1.1.0",

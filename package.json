@@ -9,6 +9,7 @@
     "binding.c",
     "binding.js",
     "CMakeLists.txt",
+    "PrivacyInfo.xcprivacy",
     "include",
     "src",
     "prebuilds"

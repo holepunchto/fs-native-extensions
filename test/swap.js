@@ -1,6 +1,7 @@
 const test = require('brittle')
 const { join, sep } = require('path')
 const { writeFile, readFile } = require('fs/promises')
+const { isWindows } = require('which-runtime')
 
 const { swap, swapSync } = require('..')
 
@@ -56,7 +57,7 @@ test('swap files, sync', async (t) => {
   t.is(await readFile(b, 'utf8'), 'a')
 })
 
-test('swap files, long paths', async (t) => {
+test('swap files, long paths', { skip: isWindows }, async (t) => {
   const padding = `.${sep}`.repeat(200)
 
   const a = (await t.tmp()) + sep + padding + 'a'

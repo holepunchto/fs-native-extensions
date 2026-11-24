@@ -9,7 +9,36 @@
 
 #include "src/platform.h"
 
-typedef utf8_t fs_ext_js_path_t[4096 + 1 /* NULL */];
+typedef utf8_t fs_ext_js_string_buffer_t[256];
+
+static utf8_t *
+fs_ext_js__get_string(js_env_t *env, js_value_t *value, fs_ext_js_string_buffer_t buffer) {
+  int err;
+
+  size_t str_len;
+  err = js_get_value_string_utf8(env, value, NULL, 0, &str_len);
+  assert(err == 0);
+
+  utf8_t *result = buffer;
+
+  size_t len = sizeof(fs_ext_js_string_buffer_t);
+
+  if (str_len + 1 /* NULL */ > len) {
+    len = str_len + 1 /* NULL */;
+
+    result = malloc(len);
+  }
+
+  err = js_get_value_string_utf8(env, value, result, len, NULL);
+  assert(err == 0);
+
+  return result;
+}
+
+static void
+fs_ext_js__free_string(utf8_t *string, utf8_t *buffer) {
+  if (string != buffer) free(string);
+}
 
 typedef struct {
   fs_ext_lock_t req;
@@ -1231,13 +1260,11 @@ fs_ext_js_swap(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 4);
 
-  fs_ext_js_path_t from;
-  err = js_get_value_string_utf8(env, argv[0], from, sizeof(from), NULL);
-  assert(err == 0);
+  fs_ext_js_string_buffer_t from_buffer;
+  utf8_t *from = fs_ext_js__get_string(env, argv[0], from_buffer);
 
-  fs_ext_js_path_t to;
-  err = js_get_value_string_utf8(env, argv[1], to, sizeof(to), NULL);
-  assert(err == 0);
+  fs_ext_js_string_buffer_t to_buffer;
+  utf8_t *to = fs_ext_js__get_string(env, argv[1], to_buffer);
 
   js_value_t *handle;
 
@@ -1256,6 +1283,9 @@ fs_ext_js_swap(js_env_t *env, js_callback_info_t *info) {
     (const char *) to,
     fs_ext_js__on_swap
   );
+
+  fs_ext_js__free_string(from, from_buffer);
+  fs_ext_js__free_string(to, to_buffer);
 
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
@@ -1291,15 +1321,16 @@ fs_ext_js_swap_sync(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 2);
 
-  fs_ext_js_path_t from;
-  err = js_get_value_string_utf8(env, argv[0], from, sizeof(from), NULL);
-  assert(err == 0);
+  fs_ext_js_string_buffer_t from_buffer;
+  utf8_t *from = fs_ext_js__get_string(env, argv[0], from_buffer);
 
-  fs_ext_js_path_t to;
-  err = js_get_value_string_utf8(env, argv[1], to, sizeof(to), NULL);
-  assert(err == 0);
+  fs_ext_js_string_buffer_t to_buffer;
+  utf8_t *to = fs_ext_js__get_string(env, argv[1], to_buffer);
 
   err = fs_ext__swap((const char *) from, (const char *) to);
+
+  fs_ext_js__free_string(from, from_buffer);
+  fs_ext_js__free_string(to, to_buffer);
 
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
@@ -1334,6 +1365,15 @@ fs_ext_js_get_attr(js_env_t *env, js_callback_info_t *info) {
   utf8_t *name = malloc(name_len);
   err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
   assert(err == 0);
+
+  if (strlen((char *) name) != name_len - 1 /* NULL */) {
+    free(name);
+
+    err = js_throw_type_error(env, NULL, "Name must not contain null bytes");
+    assert(err == 0);
+
+    return NULL;
+  }
 
   js_value_t *handle;
 
@@ -1403,6 +1443,15 @@ fs_ext_js_get_attr_sync(js_env_t *env, js_callback_info_t *info) {
   err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
   assert(err == 0);
 
+  if (strlen((char *) name) != name_len - 1 /* NULL */) {
+    free(name);
+
+    err = js_throw_type_error(env, NULL, "Name must not contain null bytes");
+    assert(err == 0);
+
+    return NULL;
+  }
+
   uv_buf_t value = uv_buf_init(NULL, 0);
 
   int result = fs_ext__get_attr(uv_get_osfhandle(fd), (const char *) name, &value);
@@ -1461,6 +1510,15 @@ fs_ext_js_set_attr(js_env_t *env, js_callback_info_t *info) {
   utf8_t *name = malloc(name_len);
   err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
   assert(err == 0);
+
+  if (strlen((char *) name) != name_len - 1 /* NULL */) {
+    free(name);
+
+    err = js_throw_type_error(env, NULL, "Name must not contain null bytes");
+    assert(err == 0);
+
+    return NULL;
+  }
 
   char *data;
   err = js_get_arraybuffer_info(env, argv[2], (void **) &data, NULL);
@@ -1545,6 +1603,15 @@ fs_ext_js_set_attr_sync(js_env_t *env, js_callback_info_t *info) {
   err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
   assert(err == 0);
 
+  if (strlen((char *) name) != name_len - 1 /* NULL */) {
+    free(name);
+
+    err = js_throw_type_error(env, NULL, "Name must not contain null bytes");
+    assert(err == 0);
+
+    return NULL;
+  }
+
   char *data;
   err = js_get_arraybuffer_info(env, argv[2], (void **) &data, NULL);
   assert(err == 0);
@@ -1596,6 +1663,15 @@ fs_ext_js_remove_attr(js_env_t *env, js_callback_info_t *info) {
   utf8_t *name = malloc(name_len);
   err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
   assert(err == 0);
+
+  if (strlen((char *) name) != name_len - 1 /* NULL */) {
+    free(name);
+
+    err = js_throw_type_error(env, NULL, "Name must not contain null bytes");
+    assert(err == 0);
+
+    return NULL;
+  }
 
   js_value_t *handle;
 
@@ -1664,6 +1740,15 @@ fs_ext_js_remove_attr_sync(js_env_t *env, js_callback_info_t *info) {
   utf8_t *name = malloc(name_len);
   err = js_get_value_string_utf8(env, argv[1], name, name_len, NULL);
   assert(err == 0);
+
+  if (strlen((char *) name) != name_len - 1 /* NULL */) {
+    free(name);
+
+    err = js_throw_type_error(env, NULL, "Name must not contain null bytes");
+    assert(err == 0);
+
+    return NULL;
+  }
 
   int result = fs_ext__remove_attr(uv_get_osfhandle(fd), (const char *) name);
 

@@ -254,6 +254,8 @@ exports.getAttr = function getAttr(fd, name) {
   })
 
   try {
+    validateAttrName(name)
+
     req.handle = binding.getAttr(fd, name, req, onwork)
   } catch (err) {
     return Promise.reject(err)
@@ -263,6 +265,8 @@ exports.getAttr = function getAttr(fd, name) {
 }
 
 exports.getAttrSync = function getAttrSync(fd, name) {
+  validateAttrName(name)
+
   const buffer = binding.getAttrSync(fd, name)
   return buffer === null ? null : Buffer.from(buffer)
 }
@@ -283,6 +287,8 @@ exports.setAttr = function setAttr(fd, name, value, encoding) {
   })
 
   try {
+    validateAttrName(name)
+
     req.handle = binding.setAttr(
       fd,
       name,
@@ -302,6 +308,8 @@ exports.setAttr = function setAttr(fd, name, value, encoding) {
 exports.setAttrSync = function setAttrSync(fd, name, value, encoding) {
   if (typeof value === 'string') value = Buffer.from(value, encoding)
 
+  validateAttrName(name)
+
   binding.setAttrSync(fd, name, value.buffer, value.byteOffset, value.byteLength)
 }
 
@@ -318,6 +326,8 @@ exports.removeAttr = function removeAttr(fd, name) {
   })
 
   try {
+    validateAttrName(name)
+
     req.handle = binding.removeAttr(fd, name, req, onwork)
   } catch (err) {
     return Promise.reject(err)
@@ -327,6 +337,8 @@ exports.removeAttr = function removeAttr(fd, name) {
 }
 
 exports.removeAttrSync = function removeAttrSync(fd, name) {
+  validateAttrName(name)
+
   binding.removeAttrSync(fd, name)
 }
 
@@ -353,4 +365,11 @@ exports.listAttrs = function listAttrs(fd) {
 
 exports.listAttrsSync = function listAttrsSync(fd) {
   return binding.listAttrsSync(fd)
+}
+
+// The name is passed on as a C string, so a NUL would cut it short.
+function validateAttrName(name) {
+  if (typeof name === 'string' && name.includes('\0')) {
+    throw new TypeError('The "name" argument must not contain null bytes')
+  }
 }

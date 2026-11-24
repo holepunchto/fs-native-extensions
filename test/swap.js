@@ -1,6 +1,7 @@
 const test = require('brittle')
-const { join } = require('path')
+const { join, sep } = require('path')
 const { writeFile, readFile } = require('fs/promises')
+const { isWindows } = require('which-runtime')
 
 const { swap, swapSync } = require('..')
 
@@ -54,6 +55,30 @@ test('swap files, sync', async (t) => {
 
   t.is(await readFile(a, 'utf8'), 'b')
   t.is(await readFile(b, 'utf8'), 'a')
+})
+
+test('swap files, long paths', { skip: isWindows }, async (t) => {
+  const padding = `.${sep}`.repeat(200)
+
+  const a = (await t.tmp()) + sep + padding + 'a'
+  const b = (await t.tmp()) + sep + padding + 'b'
+
+  await writeFile(a, 'a')
+  await writeFile(b, 'b')
+
+  await swap(a, b)
+  swapSync(a, b)
+  await swap(a, b)
+
+  t.is(await readFile(a, 'utf8'), 'b')
+  t.is(await readFile(b, 'utf8'), 'a')
+})
+
+test('swap files, paths longer than the platform allows', async (t) => {
+  const long = 'a'.repeat(5000)
+
+  await t.exception(swap(long, long))
+  t.exception(() => swapSync(long, long))
 })
 
 test('swap directories, sync', async (t) => {

@@ -175,3 +175,19 @@ test('set and list attributes, sync', async (t) => {
     ['user.a', 'user.b', 'user.c', 'user.d']
   )
 })
+
+test('attribute name with a NUL', async (t) => {
+  const file = join(await t.tmp(), 'test')
+
+  const fd = await open(file, 'w+')
+  t.teardown(() => close(fd))
+
+  await t.exception.all(setAttr(fd, 'user.a\0b', 'value'), TypeError)
+  t.exception.all(() => setAttrSync(fd, 'user.a\0b', 'value'), TypeError)
+  await t.exception.all(getAttr(fd, 'user.a\0b'), TypeError)
+  t.exception.all(() => getAttrSync(fd, 'user.a\0b'), TypeError)
+  await t.exception.all(removeAttr(fd, 'user.a\0b'), TypeError)
+  t.exception.all(() => removeAttrSync(fd, 'user.a\0b'), TypeError)
+
+  t.is(await getAttr(fd, 'user.a'), null, 'the attribute cut short was not set')
+})

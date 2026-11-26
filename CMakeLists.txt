@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 4.0)
 
 find_package(cmake-bare REQUIRED PATHS node_modules/cmake-bare)
 find_package(cmake-fetch REQUIRED PATHS node_modules/cmake-fetch)
 find_package(cmake-napi REQUIRED PATHS node_modules/cmake-napi)
-find_package(cmake-npm REQUIRED PATHS node_modules/cmake-npm)
 
 project(fs_native_extensions C)
 
+fetch_package("github:holepunchto/libnapish#8cbfe78")
 fetch_package("github:libuv/libuv@1.51.0")
 
 add_library(fs_native_extensions STATIC)
@@ -100,20 +100,7 @@ target_link_libraries(
   ${fs_native_extensions_napi}
   PRIVATE
     fs_native_extensions
-)
-
-target_compile_definitions(
-  ${fs_native_extensions_napi}
-  PRIVATE
-    NAPI_VERSION=9
-)
-
-resolve_node_module(bare-compat-napi compat)
-
-target_include_directories(
-  ${fs_native_extensions_napi}
-  PRIVATE
-    "${compat}/include"
+    napish::static
 )
 
 if(WIN32)
